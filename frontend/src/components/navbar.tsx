@@ -14,7 +14,7 @@ const AvatarDropdown = () => {
 			<DropdownMenuTrigger asChild>
 				<Avatar className="cursor-pointer">
 					<AvatarImage
-						src="https://via.placeholder.com/150"
+						src="https://github.com/mountaint0p.png"
 						alt="User Avatar"
 					/>
 					<AvatarFallback>SP</AvatarFallback>
@@ -22,7 +22,9 @@ const AvatarDropdown = () => {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56">
 				<DropdownMenuGroup>
-					<DropdownMenuItem>My Profile</DropdownMenuItem>
+					<Link to="/profile/1">
+						<DropdownMenuItem>My Profile</DropdownMenuItem>
+					</Link>
 					<DropdownMenuItem>List Store Item</DropdownMenuItem>
 					<DropdownMenuItem>Create Forum Post</DropdownMenuItem>
 					<DropdownMenuItem>Log Out</DropdownMenuItem>

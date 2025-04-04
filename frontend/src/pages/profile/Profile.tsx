@@ -1,9 +1,9 @@
-import React from "react";
 import { useParams } from "react-router-dom";
 import { StoreItem } from "@/types/StoreItem";
-import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StoreItemCard } from "@/pages/store/StoreItemCard";
 
 // Mock Data until backend is ready
 
@@ -114,78 +114,78 @@ const mockData: StoreItem[] = [
 	},
 ];
 
-export default function Item() {
+export default function Profile() {
 	const params = useParams();
-	if (!params.itemId) {
+	// Will be used later to fetch user data
+	if (!params.userId) {
 		return <div>Item not found</div>;
 	}
-	const itemId = parseInt(params.itemId);
-	const item = mockData.find((item) => item.id === itemId);
-	if (!item) {
-		return <div>Item not found</div>;
-	}
-
-	// Used to scroll automatically when routed
-	useEffect(() => {
-		window.scrollTo(0, 0);
-	}, []);
 
 	return (
-		<div className="min-h-screen p-8 bg-gray-50">
-			<div className="max-w-7xl mx-auto bg-white rounded-lg overflow-hidden border-2 border-black">
-				<div className="flex">
-					{/* Left: Item Image */}
-					<div className="w-1/2">
-						<img
-							src={item.imageUrl}
-							alt={item.title}
-							className="w-full h-full object-cover"
+		<div className="overflow-y-auto p-4 overscroll-none">
+			<div className="max-w-7xl mx-auto">
+				<div className="text-5xl font-bold mb-2">Profile</div>
+				<div className="flex items-center mb-4">
+					<Avatar className="cursor-pointer h-20 w-20">
+						<AvatarImage
+							src="https://github.com/mountaint0p.png"
+							alt="User Avatar"
 						/>
-					</div>
-					{/* Right: Item Details */}
-					<div className="w-1/2 p-6 flex flex-col">
-						<h1 className="text-3xl font-bold mb-2">{item.title}</h1>
-						<h2 className="text-xl mb-2">
-							Seller:{" "}
-							<Link to="/profile/1" className="underline">
-								Summit
-							</Link>
-						</h2>
-						<p className="text-gray-700 mb-4 text-xl">{item.description}</p>
-						<p className="text-2xl font-semibold mb-4">
-							${item.price.toFixed(2)}
-						</p>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Condition:</span>
-							<span className="text-gray-700">{item.condition}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Size:</span>
-							<span className="text-gray-700">{item.size}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Gender:</span>
-							<span className="text-gray-700">{item.gender}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Category:</span>
-							<span className="text-gray-700">{item.category}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Color:</span>
-							<span className="text-gray-700">{item.color}</span>
-						</div>
-						<div className="mt-auto">
-							<Button
-								size="lg"
-								variant="secondary"
-								className="w-full mb-4 bg-blue-500 text-white hover:bg-blue-600"
-							>
-								Contact Seller
-							</Button>
-						</div>
+						<AvatarFallback>SP</AvatarFallback>
+					</Avatar>
+					<div>
+						<div className="text-lg font-bold ml-4">Summit Pradhan</div>
 					</div>
 				</div>
+				<div className="text-2xl font-bold mb-4">Bio</div>
+				<div className="text-base mb-4 w-1/3">
+					Hi, I'm Summit! I love thrifting and finding unique pieces. I enjoy
+					playing the guitar, cooking, and traveling.
+				</div>
+				<div className="text-2xl font-bold mb-4">Stats</div>
+				<div className="grid grid-cols-4 gap-4 w-full mt-4">
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">10</p>
+						<p className="text-lg text-muted-foreground">Past Sales</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">10</p>
+						<p className="text-lg text-muted-foreground">Items on Sale</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">10</p>
+						<p className="text-lg text-muted-foreground">Purchases</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">10</p>
+						<p className="text-lg text-muted-foreground">Forum Posts</p>
+					</div>
+				</div>
+				{/* Tabbed Interface */}
+				<Tabs defaultValue="selling" className="mt-8">
+					<TabsList>
+						<TabsTrigger value="selling">Selling</TabsTrigger>
+						<TabsTrigger value="liked">Liked</TabsTrigger>
+						<TabsTrigger value="forum">Forum</TabsTrigger>
+					</TabsList>
+					<TabsContent value="selling">
+						<div className="grid grid-cols-4 gap-4 mt-4">
+							{mockData.map((item) => (
+								<StoreItemCard key={item.id} storeItem={item} />
+							))}
+						</div>
+					</TabsContent>
+					<TabsContent value="liked">
+						<div className="grid grid-cols-4 gap-4 mt-4">
+							{[mockData[0], mockData[2], mockData[5]].map((item) => (
+								<StoreItemCard key={item.id} storeItem={item} />
+							))}
+						</div>
+					</TabsContent>
+					<TabsContent value="forum">
+						<div className="mt-4 text-center">No forum posts yet.</div>
+					</TabsContent>
+				</Tabs>
 			</div>
 		</div>
 	);
