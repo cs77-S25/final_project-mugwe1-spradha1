@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 export default function Navbar() {
 	return (
-		<nav className="flex justify-between items-center bg-red-800 p-4 z-20 sticky top-0">
+		<nav className="flex justify-between items-center bg-[#A11833] p-4 z-20 sticky top-0">
 			<div className="text-xl font-bold text-white">
 				<Link to="/">Swycle ♻️</Link>
 			</div>
