@@ -1,4 +1,4 @@
-import { StoreItemCard } from "@/components/storeItem";
+import { StoreItemCard } from "@/pages/store/storeItemCard";
 import { StoreItem } from "@/types/StoreItem";
 import { useState } from "react";
 
@@ -201,7 +201,7 @@ export function DropdownMenuCondition({
 
 const mockData: StoreItem[] = [
 	{
-		id: 1,
+		id: 0,
 		title: "Denim Jacket",
 		description: "A rugged denim jacket perfect for layering.",
 		price: 59.7,
@@ -214,7 +214,7 @@ const mockData: StoreItem[] = [
 		size: "M",
 	},
 	{
-		id: 2,
+		id: 1,
 		title: "Nivarna T-Shirt",
 		description: "Classic t-shirt with a vintage Nivarna print.",
 		price: 24.87,
@@ -227,7 +227,7 @@ const mockData: StoreItem[] = [
 		size: "L",
 	},
 	{
-		id: 3,
+		id: 2,
 		title: "Cargo Pants",
 		description: "Nice cargo pants with plenty of pockets.",
 		price: 39.5,
@@ -240,7 +240,7 @@ const mockData: StoreItem[] = [
 		size: "S",
 	},
 	{
-		id: 4,
+		id: 3,
 		title: "Nike Airforce 1",
 		description: "Old pair of Nike Airforce 1 sneakers.",
 		price: 50.0,
@@ -253,7 +253,7 @@ const mockData: StoreItem[] = [
 		size: "10",
 	},
 	{
-		id: 5,
+		id: 4,
 		title: "Basketball Hat",
 		description: "Lakers basketball hat.",
 		price: 14.0,
@@ -266,7 +266,7 @@ const mockData: StoreItem[] = [
 		size: "",
 	},
 	{
-		id: 6,
+		id: 5,
 		title: "Leather Belt",
 		description: "Leather belt with a sonic design.",
 		price: 19.99,
@@ -279,7 +279,7 @@ const mockData: StoreItem[] = [
 		size: "",
 	},
 	{
-		id: 7,
+		id: 6,
 		title: "Tote Bag",
 		description: "Tote bag with an anime print.",
 		price: 15.99,
@@ -292,7 +292,7 @@ const mockData: StoreItem[] = [
 		size: "",
 	},
 	{
-		id: 8,
+		id: 7,
 		title: "Baggy Jeans",
 		description: "Trendy baggy jeans for a casual look.",
 		price: 30.99,
