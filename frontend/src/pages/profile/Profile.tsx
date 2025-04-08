@@ -126,7 +126,7 @@ export default function Profile() {
 			<div className="max-w-7xl mx-auto">
 				<div className="text-5xl font-bold mb-2">Profile</div>
 				<div className="flex items-center mb-4">
-					<Avatar className="cursor-pointer h-20 w-20">
+					<Avatar className="h-20 w-20">
 						<AvatarImage
 							src="https://github.com/mountaint0p.png"
 							alt="User Avatar"

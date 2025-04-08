@@ -13,7 +13,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { X } from "lucide-react";
+import { X, Plus } from "lucide-react";
 
 interface DropdownMenuColorsProps {
 	selectedColors: string[];
@@ -336,20 +336,26 @@ export default function Store() {
 					Find your next favorite piece at Swycle!
 				</div>
 
-				{/* Filter Dropdowns */}
-				<div className="flex gap-4 mb-4">
-					<DropdownMenuColors
-						selectedColors={selectedColors}
-						setSelectedColors={setSelectedColors}
-					/>
-					<DropdownMenuCategory
-						selectedCategories={selectedCategories}
-						setSelectedCategories={setSelectedCategories}
-					/>
-					<DropdownMenuCondition
-						selectedConditions={selectedConditions}
-						setSelectedConditions={setSelectedConditions}
-					/>
+				<div className="flex justify-between items-center mb-4">
+					{/* Filter Dropdowns */}
+					<div className="flex gap-4">
+						<DropdownMenuColors
+							selectedColors={selectedColors}
+							setSelectedColors={setSelectedColors}
+						/>
+						<DropdownMenuCategory
+							selectedCategories={selectedCategories}
+							setSelectedCategories={setSelectedCategories}
+						/>
+						<DropdownMenuCondition
+							selectedConditions={selectedConditions}
+							setSelectedConditions={setSelectedConditions}
+						/>
+					</div>
+					<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8">
+						<Plus size={24} className="min-w-4" />
+						List Item
+					</button>
 				</div>
 
 				{/* Filter Badges */}

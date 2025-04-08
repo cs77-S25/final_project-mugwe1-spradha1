@@ -8,7 +8,7 @@ import Profile from "@/pages/profile/Profile";
 
 function App() {
 	const location = useLocation();
-  	const isHomePage = location.pathname === "/";
+	const isHomePage = location.pathname === "/";
 	return (
 		<>
 			{/* Navbar component */}
