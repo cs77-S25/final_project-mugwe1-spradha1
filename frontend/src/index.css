@@ -128,3 +128,7 @@
 		font-style: normal;
 	}
 }
+
+@theme {
+	--font-nothing: "Nothing You Could Do", "cursive";
+}

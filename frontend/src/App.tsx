@@ -5,6 +5,7 @@ import Home from "@/pages/home/Home";
 import Navbar from "./components/navbar";
 import Item from "@/pages/item/Item";
 import Profile from "@/pages/profile/Profile";
+import "./app.css";
 
 function App() {
 	const location = useLocation();

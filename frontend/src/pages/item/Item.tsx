@@ -175,6 +175,12 @@ export default function Item() {
 							<span className="text-gray-700 font-bold mr-2">Color:</span>
 							<span className="text-gray-700">{item.color}</span>
 						</div>
+						<div className="flex items-center mb-4">
+							<span className="text-gray-700 font-bold mr-2">
+								Contact Info:
+							</span>
+							<span className="text-gray-700">spradha1@swarthmore.edu</span>
+						</div>
 						<div className="mt-auto">
 							<Button
 								size="lg"
