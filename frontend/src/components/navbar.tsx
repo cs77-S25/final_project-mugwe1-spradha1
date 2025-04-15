@@ -25,7 +25,9 @@ const AvatarDropdown = () => {
 					<Link to="/profile/1">
 						<DropdownMenuItem>My Profile</DropdownMenuItem>
 					</Link>
-					<DropdownMenuItem>List Store Item</DropdownMenuItem>
+					<Link to="/upload-item">
+						<DropdownMenuItem>List Store Item</DropdownMenuItem>
+					</Link>
 					<DropdownMenuItem>Create Forum Post</DropdownMenuItem>
 					<DropdownMenuItem>Log Out</DropdownMenuItem>
 				</DropdownMenuGroup>

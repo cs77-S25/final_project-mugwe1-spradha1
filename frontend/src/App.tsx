@@ -5,6 +5,7 @@ import Home from "@/pages/home/Home";
 import Navbar from "./components/navbar";
 import Item from "@/pages/item/Item";
 import Profile from "@/pages/profile/Profile";
+import UploadItem from "@/pages/uploadItem/UploadItem";
 import "./app.css";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
 				<Route path="/store" element={<Store />} />
 				<Route path="/item/:itemId" element={<Item />} />
 				<Route path="/profile/:userId" element={<Profile />} />
+				<Route path="/upload-item" element={<UploadItem />} />
 			</Routes>
 		</>
 	);

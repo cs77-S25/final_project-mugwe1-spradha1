@@ -9,6 +9,7 @@ export default function Item() {
 	const [storeItem, setStoreItem] = React.useState<StoreItemWithUser | null>(
 		null
 	);
+	const [loading, setLoading] = React.useState(true);
 	const params = useParams();
 	if (!params.itemId) {
 		return <div>Invalid Route</div>;
@@ -22,6 +23,9 @@ export default function Item() {
 				const response = await fetch(
 					`http://127.0.0.1:5000/store-items/${itemId}`
 				);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
 				const data = await response.json();
 				console.log("Fetched store items:", data);
 				setStoreItem(data);
@@ -29,16 +33,25 @@ export default function Item() {
 				console.error("Error fetching item:", error);
 			}
 		};
-
+		setLoading(true);
 		fetchItem();
+		setLoading(false);
 	}, []);
 
 	const imageDataUrl = `data:image/jpeg;base64,${storeItem?.picture_data}`;
 
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<p className="text-2xl">Loading...</p>
+			</div>
+		);
+	}
+
 	if (!storeItem) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
-				<p className="text-xl">Loading...</p>
+				<p className="text-2xl">Item not found</p>
 			</div>
 		);
 	}

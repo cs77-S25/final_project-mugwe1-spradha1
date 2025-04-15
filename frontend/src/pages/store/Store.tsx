@@ -15,6 +15,8 @@ import {
 
 import { X, Plus } from "lucide-react";
 
+import { Link } from "react-router-dom";
+
 interface DropdownMenuColorsProps {
 	selectedColors: string[];
 	setSelectedColors: React.Dispatch<React.SetStateAction<string[]>>;
@@ -197,8 +199,6 @@ export function DropdownMenuCondition({
 	);
 }
 
-// Mock Data until backend is ready
-
 export default function Store() {
 	// Filter states
 	const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -211,10 +211,12 @@ export default function Store() {
 		// Fetch store items from the backend
 		const fetchStoreItems = async () => {
 			try {
+				setLoading(true);
 				const response = await fetch("http://127.0.0.1:5000/store-items");
 				const data = await response.json();
 				console.log("Fetched store items:", data);
 				setStoreItems(data);
+				setLoading(false);
 			} catch (error) {
 				console.error("Error fetching store items:", error);
 			} finally {
@@ -237,6 +239,14 @@ export default function Store() {
 			selectedConditions.includes(item.condition);
 		return colorMatch && categoryMatch && conditionMatch;
 	});
+
+	if (loading) {
+		return (
+			<div className="flex justify-center items-center h-screen">
+				<div className="text-2xl">Loading...</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="overflow-y-auto p-4 overscroll-none">
@@ -262,10 +272,12 @@ export default function Store() {
 							setSelectedConditions={setSelectedConditions}
 						/>
 					</div>
-					<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8">
-						<Plus size={24} className="min-w-4" />
-						List Item
-					</button>
+					<Link to="/upload-item">
+						<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8">
+							<Plus size={24} className="min-w-4" />
+							List Item
+						</button>
+					</Link>
 				</div>
 
 				{/* Filter Badges */}
@@ -331,6 +343,12 @@ export default function Store() {
 				</div>
 
 				{/* Items */}
+				{filteredItems.length === 0 && (
+					<div className="text-2xl text-center">
+						No items found. Please try different filters.
+					</div>
+				)}
+
 				<div className="grid grid-cols-4">
 					{filteredItems.map((item, index) => (
 						<StoreItemCard key={index} storeItem={item} />

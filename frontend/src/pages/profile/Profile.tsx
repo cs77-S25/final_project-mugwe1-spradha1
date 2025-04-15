@@ -16,6 +16,7 @@ export default function Profile() {
 	}
 	const [profileUser, setProfileUser] = useState<User | null>(null);
 	const [profileStoreItems, setProfileStoreItems] = useState<StoreItem[]>([]);
+	const [loading, setLoading] = useState(true);
 	const userId = parseInt(params.userId);
 
 	useEffect(() => {
@@ -24,6 +25,9 @@ export default function Profile() {
 		const fetchProfileUser = async () => {
 			try {
 				const response = await fetch(`http://127.0.0.1:5000/user/${userId}`);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
 				const data = await response.json();
 				setProfileUser(data);
 			} catch (error) {
@@ -36,6 +40,9 @@ export default function Profile() {
 				const response = await fetch(
 					`http://127.0.0.1:5000/user/${userId}/store-items`
 				);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
 				const data = await response.json();
 				setProfileStoreItems(data);
 			} catch (error) {
@@ -43,14 +50,24 @@ export default function Profile() {
 			}
 		};
 
+		setLoading(true);
 		fetchProfileUser();
 		fetchProfileStoreItems();
-	}, []);
+		setLoading(false);
+	}, [userId]);
+
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<p className="text-xl">Loading...</p>
+			</div>
+		);
+	}
 
 	if (!profileUser) {
 		return (
 			<div className="flex items-center justify-center min-h-screen">
-				<p className="text-xl">Loading...</p>
+				<p className="text-xl">User not found</p>
 			</div>
 		);
 	}
