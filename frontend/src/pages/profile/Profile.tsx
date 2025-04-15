@@ -1,124 +1,58 @@
 import { useParams } from "react-router-dom";
 import { StoreItem } from "@/types/StoreItem";
-import { useEffect } from "react";
+import { User } from "@/types/User";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { StoreItemCard } from "@/pages/store/StoreItemCard";
+import { StoreItemCard } from "@/pages/store/storeItemCard";
 
 // Mock Data until backend is ready
-
-const mockData: StoreItem[] = [
-	{
-		id: 0,
-		title: "Denim Jacket",
-		description: "A rugged denim jacket perfect for layering.",
-		price: 59.7,
-		imageUrl:
-			"https://media-photos.depop.com/b1/9830149/2568252837_2e9b7676448d487b812b9ee6cc8ae0d3/P0.jpg",
-		category: "Jackets",
-		gender: "Unisex",
-		condition: "Good",
-		color: "Blue",
-		size: "M",
-	},
-	{
-		id: 1,
-		title: "Nivarna T-Shirt",
-		description: "Classic t-shirt with a vintage Nivarna print.",
-		price: 24.87,
-		imageUrl:
-			"https://media-photos.depop.com/b1/44252282/2491125869_bb0b743358624e60a174b362e9e016f8/P0.jpg",
-		category: "Tops",
-		gender: "Male",
-		condition: "Excellent",
-		color: "Black",
-		size: "L",
-	},
-	{
-		id: 2,
-		title: "Cargo Pants",
-		description: "Nice cargo pants with plenty of pockets.",
-		price: 39.5,
-		imageUrl:
-			"https://media-photos.depop.com/b1/45444992/2563672660_1bba74165ced4226be6eee126ec1055b/P0.jpg",
-		category: "Bottoms",
-		gender: "Female",
-		condition: "Fair",
-		color: "Green",
-		size: "S",
-	},
-	{
-		id: 3,
-		title: "Nike Airforce 1",
-		description: "Old pair of Nike Airforce 1 sneakers.",
-		price: 50.0,
-		imageUrl:
-			"https://media-photos.depop.com/b1/369353590/2564259976_78e7d32b29ee4357a684ca2206679ba5/P0.jpg",
-		category: "Shoes",
-		gender: "Unisex",
-		condition: "Good",
-		color: "White",
-		size: "10",
-	},
-	{
-		id: 4,
-		title: "Basketball Hat",
-		description: "Lakers basketball hat.",
-		price: 14.0,
-		imageUrl:
-			"https://media-photos.depop.com/b1/50247183/2507444774_759d7406006c42a3a42ab050007195f7/P0.jpg",
-		category: "Hats",
-		gender: "Unisex",
-		condition: "Good",
-		color: "Purple",
-		size: "",
-	},
-	{
-		id: 5,
-		title: "Leather Belt",
-		description: "Leather belt with a sonic design.",
-		price: 19.99,
-		imageUrl:
-			"https://media-photos.depop.com/b1/48864608/2557008258_38601450746d4fa7804a23e1216b1dee/P0.jpg",
-		category: "Accessories",
-		gender: "Male",
-		condition: "Excellent",
-		color: "Black",
-		size: "",
-	},
-	{
-		id: 6,
-		title: "Tote Bag",
-		description: "Tote bag with an anime print.",
-		price: 15.99,
-		imageUrl:
-			"https://media-photos.depop.com/b1/318465847/2557750701_ebdd9ff7a2b442b8b00d416c7d6052b7/P0.jpg",
-		category: "Misc",
-		gender: "Unisex",
-		condition: "Excellent",
-		color: "Brown",
-		size: "",
-	},
-	{
-		id: 7,
-		title: "Baggy Jeans",
-		description: "Trendy baggy jeans for a casual look.",
-		price: 30.99,
-		imageUrl:
-			"https://media-photos.depop.com/b1/457776392/2568029273_22e15114d14b46408954c73d42d0bdce/P5.jpg",
-		category: "Bottoms",
-		gender: "Female",
-		condition: "Fair",
-		color: "Blue",
-		size: "",
-	},
-];
 
 export default function Profile() {
 	const params = useParams();
 	// Will be used later to fetch user data
 	if (!params.userId) {
-		return <div>Item not found</div>;
+		return <div>User not found</div>;
+	}
+	const [profileUser, setProfileUser] = useState<User | null>(null);
+	const [profileStoreItems, setProfileStoreItems] = useState<StoreItem[]>([]);
+	const userId = parseInt(params.userId);
+
+	useEffect(() => {
+		window.scrollTo(0, 0);
+
+		const fetchProfileUser = async () => {
+			try {
+				const response = await fetch(`http://127.0.0.1:5000/user/${userId}`);
+				const data = await response.json();
+				setProfileUser(data);
+			} catch (error) {
+				console.error("Error fetching user:", error);
+			}
+		};
+
+		const fetchProfileStoreItems = async () => {
+			try {
+				const response = await fetch(
+					`http://127.0.0.1:5000/user/${userId}/store-items`
+				);
+				const data = await response.json();
+				setProfileStoreItems(data);
+			} catch (error) {
+				console.error("Error fetching user:", error);
+			}
+		};
+
+		fetchProfileUser();
+		fetchProfileStoreItems();
+	}, []);
+
+	if (!profileUser) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<p className="text-xl">Loading...</p>
+			</div>
+		);
 	}
 
 	return (
@@ -134,14 +68,11 @@ export default function Profile() {
 						<AvatarFallback>SP</AvatarFallback>
 					</Avatar>
 					<div>
-						<div className="text-lg font-bold ml-4">Summit Pradhan</div>
+						<div className="text-lg font-bold ml-4">{profileUser.name}</div>
 					</div>
 				</div>
 				<div className="text-2xl font-bold mb-4">Bio</div>
-				<div className="text-base mb-4 w-1/3">
-					Hi, I'm Summit! I love thrifting and finding unique pieces. I enjoy
-					playing the guitar, cooking, and traveling.
-				</div>
+				<div className="text-base mb-4 w-1/3">{profileUser.bio}</div>
 				<div className="text-2xl font-bold mb-4">Stats</div>
 				<div className="grid grid-cols-4 gap-4 w-full mt-4">
 					<div className="flex flex-col items-center">
@@ -170,17 +101,18 @@ export default function Profile() {
 					</TabsList>
 					<TabsContent value="selling">
 						<div className="grid grid-cols-4 gap-4 mt-4">
-							{mockData.map((item) => (
+							{profileStoreItems.length === 0 && (
+								<div className="mt-4 text-center">
+									No listed store items yet.
+								</div>
+							)}
+							{profileStoreItems.map((item) => (
 								<StoreItemCard key={item.id} storeItem={item} />
 							))}
 						</div>
 					</TabsContent>
 					<TabsContent value="liked">
-						<div className="grid grid-cols-4 gap-4 mt-4">
-							{[mockData[0], mockData[2], mockData[5]].map((item) => (
-								<StoreItemCard key={item.id} storeItem={item} />
-							))}
-						</div>
+						<div className="mt-4 text-center">No liked store items yet.</div>
 					</TabsContent>
 					<TabsContent value="forum">
 						<div className="mt-4 text-center">No forum posts yet.</div>

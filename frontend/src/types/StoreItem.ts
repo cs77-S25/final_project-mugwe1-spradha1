@@ -1,9 +1,11 @@
 export interface StoreItem {
 	id: number;
+	created_at: string;
+	user_id: number;
 	title: string;
 	description: string;
 	price: number;
-	imageUrl: string;
+	picture_data: string;
 	category:
 		| "Jackets"
 		| "Tops"
