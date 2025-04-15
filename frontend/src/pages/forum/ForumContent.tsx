@@ -1,5 +1,6 @@
 import React from "react";
 import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ForumPost {
   id: number;
@@ -44,19 +45,19 @@ export default function ForumContent() {
 		  
 		  New Post
 		  
-
         </button>
       </div>
       <div className="space-y-4">
         {posts.map((post) => (
-          <div key={post.id}
-            className="p-4 border border-gray-300 rounded shadow-sm bg-gray-50">
+          <Link key={post.id} to={`/forum/post/${post.id}`}>
+            <div className="p-4 border border-gray-300 rounded shadow-sm bg-gray-50">
             <h2 className="text-xl font-bold mb-1">{post.title}</h2>
             <div className="text-sm text-gray-600 mb-2">
               {post.author} - {post.date}
             </div>
             <p>{post.content}</p>
           </div>
+          </Link>
         ))}
       </div>
     </div>

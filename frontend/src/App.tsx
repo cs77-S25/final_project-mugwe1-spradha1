@@ -6,6 +6,7 @@ import Navbar from "./components/navbar";
 import Item from "@/pages/item/Item";
 import Profile from "@/pages/profile/Profile";
 import UploadItem from "@/pages/uploadItem/UploadItem";
+import ForumPostPage from "@/pages/forum/ForumPostPage";
 import "./app.css";
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
 				<Route path="/item/:itemId" element={<Item />} />
 				<Route path="/profile/:userId" element={<Profile />} />
 				<Route path="/upload-item" element={<UploadItem />} />
+				<Route path="/forum/post/:postId" element={<ForumPostPage />} />
 			</Routes>
 		</>
 	);
