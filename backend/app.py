@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from models import db, User, ItemListing, FormPost, FormComment, FormLike
+from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike
 from datetime import datetime
 import os
 

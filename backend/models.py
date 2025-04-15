@@ -53,7 +53,7 @@ class ItemListing(db.Model):
             "picture_data": encoded_picture,
         }
 
-class FormPost(db.Model):
+class ForumPost(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -75,40 +75,40 @@ class FormPost(db.Model):
             "created_at": self.created_at,
         }
 
-class FormComment(db.Model):
+class ForumComment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    form_post_id = db.Column(db.Integer, db.ForeignKey('form_post.id'), nullable=False)
+    forum_post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def __repr__(self) -> str:
-        string = f"ID: {self.id}, Form_Post_ID: {self.form_post_id}, User_ID: {self.user_id}, Content: {self.content}, Created_At: {self.created_at}"
+        string = f"ID: {self.id}, Forum_Post_ID: {self.forum_post_id}, User_ID: {self.user_id}, Content: {self.content}, Created_At: {self.created_at}"
         return string
 
     def serialize(self):
         return {
             "id": self.id,
-            "form_post_id": self.form_post_id,
+            "forum_post_id": self.forum_post_id,
             "user_id": self.user_id,
             "content": self.content,
             "created_at": self.created_at,
         }
 
-class FormLike(db.Model):
+class ForumLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    form_post_id = db.Column(db.Integer, db.ForeignKey('form_post.id'), nullable=False)
+    forum_post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def __repr__(self) -> str:
-        string = f"ID: {self.id}, Form_Post_ID: {self.form_post_id}, User_ID: {self.user_id}, Created_At: {self.created_at}"
+        string = f"ID: {self.id}, Forum_Post_ID: {self.forum_post_id}, User_ID: {self.user_id}, Created_At: {self.created_at}"
         return string
 
     def serialize(self):
         return {
             "id": self.id,
-            "form_post_id": self.form_post_id,
+            "forum_post_id": self.forum_post_id,
             "user_id": self.user_id,
             "created_at": self.created_at,
         }
