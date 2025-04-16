@@ -88,9 +88,9 @@ export default function ForumPostPage() {
     <div className="max-w-3xl mx-auto p-4">
       <Link to="/forum" className="flex items-center text-blue-500 mb-4">
         <ArrowLeft size={20} className="text-[#A11833] custom-hover-shadow"/>
-        <span className="font-bold text-gray-600 ml-2 hover:font-normal custom-hover-shadow">Back to Forum</span>
+        <span className="font-bold text-gray-600 ml-2 hover:font-normal">Back to Forum</span>
       </Link>
-      <article className="bg-white p-6 rounded shadow">
+      <article className="bg-gray-50 p-10 rounded shadow">
         <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
         <div className="text-sm text-gray-600 mb-4">
           Posted by {post.author} on {post.date}
@@ -108,13 +108,13 @@ export default function ForumPostPage() {
             onChange={(e) => setNewComment(e.target.value)}
             rows={3}/>
           <button onClick={handleAddComment}
-            className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white">
+            className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white hover:cursor-pointer">
             Post Comment
           </button>
         </div>
         <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
           {comments.map((comment) => (
-            <div key={comment.id} className="p-4 bg-gray-50 rounded shadow">
+            <div key={comment.id} className="p-6 bg-gray-50 rounded shadow">
               <div className="text-sm text-gray-600">
                 {comment.author} on {comment.date}
               </div>

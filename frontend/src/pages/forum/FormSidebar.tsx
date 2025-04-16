@@ -46,8 +46,8 @@ export default function ForumSidebar({ isCollapsed = false }: ForumSidebarProps)
         });
     };
 
-    const navItemClasses = `flex items-center p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200/20 transition-all duration-200 w-full`;
-    const layoutClasses = isCollapsed ? 'justify-center' : 'gap-3';
+    const navItemClasses = `flex items-center p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-white hover:font-bold transition-all duration-400 w-full`;
+    const layoutClasses = isCollapsed ? 'justify-left' : 'gap-4';
 
     return (
         <nav>
@@ -64,7 +64,7 @@ export default function ForumSidebar({ isCollapsed = false }: ForumSidebarProps)
                 <li className="space-y-1">
                     <button
                         onClick={handleFilterToggle}
-                        className={`${navItemClasses} ${layoutClasses} justify-between`}
+                        className={`${navItemClasses} ${layoutClasses} justify-between cursor-pointer `}
                         title="Filters"
                         aria-expanded={showFilters && !isCollapsed}
                         aria-controls="filter-options">
@@ -76,9 +76,10 @@ export default function ForumSidebar({ isCollapsed = false }: ForumSidebarProps)
                             showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />
                         )}
                     </button>
-
+					
+	
                     {showFilters && !isCollapsed && (
-                        <div id="filter-options" className="pl-9 pr-3 pb-2 space-y-3 text-white animate-fade-in-down">
+                        <div id="filter-options" className="pl-12 pr-15 pb-2 space-y-5 text-white  ">
                             {filters.map((filterGroup) => (
                                 <div key={filterGroup.label} className="pt-2 border-t border-gray-500 first:border-t-0 first:pt-0">
                                     <h4 className="mb-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
