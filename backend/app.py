@@ -241,6 +241,59 @@ def get_user_items(user_id):
     items_list = [item.serialize() for item in items]
     return make_response(jsonify(items_list), 200)
 
+# Upload store item 
+@app.route('/store-items', methods=['POST'])
+def upload_store_item():
+    picture_file = request.files.get('picture_file')
+    if not picture_file:
+        print("Picture file not found in request")
+        return make_response(jsonify({"error": "No picture file uploaded"}), 400)
+
+    user_id = request.form.get('user_id')
+    title = request.form.get('title')
+    description = request.form.get('description')
+    price = request.form.get('price')
+    color = request.form.get('color')
+    gender = request.form.get('gender')
+    size = request.form.get('size')
+    condition = request.form.get('condition')
+    category = request.form.get('category')
+
+    # Check if all required fields are present
+    if not all([id, user_id, title, description, price, color, gender, size, condition, category]):
+        print("Missing required fields in request")
+        return make_response(jsonify({"error": "Missing required fields"}), 400)
+
+    picture_data = picture_file.read()
+
+    # Create ItemListing instance
+    new_item = ItemListing(
+        user_id=user_id,
+        title=title,
+        description=description,
+        price=price,
+        color=color,
+        gender=gender,
+        size=size,
+        condition=condition,
+        category=category,
+        picture_data=picture_data
+    )
+
+    # Add to db session and commit
+    try:
+        db.session.add(new_item)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        return make_response(jsonify({"error": str(e)}), 500)
+
+    temp_response = {"message": "Item successfully uploaded!"}
+    return make_response(jsonify(temp_response), 201)
+
+
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

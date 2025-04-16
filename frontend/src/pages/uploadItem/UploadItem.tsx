@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,29 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+
+const MAX_FILE_SIZE = 5000000;
+const VALID_FILE_TYPES = [
+	"image/jpeg",
+	"image/jpg",
+	"image/png",
+	"image/webp",
+	"image/heic",
+];
 
 // Define validation schema via Zod
 const storeItemSchema = z.object({
 	title: z.string().min(1, "Title is required"),
 	description: z.string().min(1, "Description is required"),
-	// We need price to be a string to help with the regex validation
-	// but we will convert it to a number before sending it to the backend
+	// Price must be a string so regex can be applied. We convert it later.
 	price: z
 		.string()
 		.regex(/^\d+\.\d{2}$/, {
@@ -29,9 +45,15 @@ const storeItemSchema = z.object({
 		.refine((num) => parseFloat(num) > 0, {
 			message: "Price must be greater than zero",
 		}),
-	picture_data: z.custom<File>((value) => value instanceof File, {
-		message: "Picture is required",
-	}),
+	picture_file: z
+		.custom<File>((value) => value instanceof File, {
+			message: "Picture is required",
+		})
+		.refine((file) => file?.size <= MAX_FILE_SIZE, `Max picture size is 5MB.`)
+		.refine(
+			(file) => VALID_FILE_TYPES.includes(file?.type),
+			"Only .jpg, .jpeg, .png, .webp, and .heic formats are supported."
+		),
 	category: z.enum(
 		["Jackets", "Tops", "Bottoms", "Shoes", "Hats", "Accessories", "Misc"],
 		{
@@ -39,7 +61,7 @@ const storeItemSchema = z.object({
 		}
 	),
 	gender: z.enum(["Men", "Women", "Gender Neutral"], {
-		errorMap: () => ({ message: "Please select a condition" }),
+		errorMap: () => ({ message: "Please select a gender" }),
 	}),
 	condition: z.enum(["Excellent", "Good", "Fair"], {
 		errorMap: () => ({ message: "Please select a condition" }),
@@ -65,228 +87,259 @@ const storeItemSchema = z.object({
 type StoreItemFormValues = z.infer<typeof storeItemSchema>;
 
 export default function UploadItem() {
-	const {
-		register,
-		control,
-		handleSubmit,
-		formState: { errors },
-		setValue,
-	} = useForm<StoreItemFormValues>({
+	const form = useForm<StoreItemFormValues>({
 		resolver: zodResolver(storeItemSchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			price: "",
+			picture_file: undefined,
+			category: undefined,
+			gender: undefined,
+			condition: undefined,
+			color: undefined,
+			size: "",
+		},
 	});
 
 	const onSubmit = async (data: StoreItemFormValues) => {
-		console.log(data);
+		// Using formData to handle file upload
+		const formData = new FormData();
+
+		// Append text fields
+		formData.append("user_id", "0"); // Note: values must be strings.
+		formData.append("title", data.title);
+		formData.append("description", data.description);
+		formData.append("price", parseFloat(data.price).toString());
+		formData.append("category", data.category);
+		formData.append("gender", data.gender);
+		formData.append("condition", data.condition);
+		formData.append("color", data.color);
+		formData.append("size", data.size);
+
+		// Append the file directly
+		formData.append("picture_file", data.picture_file);
+
+		try {
+			const response = await fetch("http://127.0.0.1:5000/store-items", {
+				method: "POST",
+				body: formData,
+			});
+			if (!response.ok) {
+				throw new Error("Failed to upload item");
+			}
+			const result = await response.json();
+			console.log(result);
+		} catch (error) {
+			console.error("Error uploading item:", error);
+		}
 	};
 
 	return (
 		<div className="flex flex-col items-center justify-center mt-4">
-			<div className="text-3xl text-bold">Item Upload</div>
-			<form
-				onSubmit={handleSubmit(onSubmit)}
-				className="space-y-6 max-w-xl mx-auto p-4"
-			>
-				{/* Title */}
-				<div>
-					<label className="block text-base font-medium mb-1">Title</label>
-					<Input placeholder="Item title" {...register("title")} />
-					{errors.title && (
-						<p className="text-red-500 text-base mt-1">
-							{errors.title.message}
-						</p>
-					)}
-				</div>
-
-				{/* Description */}
-				<div>
-					<label className="block text-base font-medium mb-1">
-						Description
-					</label>
-					<Textarea
-						placeholder="Item description"
-						{...register("description")}
+			<div className="text-3xl font-bold">Item Upload</div>
+			<Form {...form}>
+				<form
+					onSubmit={form.handleSubmit(onSubmit)}
+					className="space-y-6 max-w-xl mx-auto p-4"
+				>
+					{/* Title */}
+					<FormField
+						control={form.control}
+						name="title"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Title</FormLabel>
+								<FormControl>
+									<Input placeholder="Item title" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-					{errors.description && (
-						<p className="text-red-500 text-base mt-1">
-							{errors.description.message}
-						</p>
-					)}
-				</div>
 
-				{/* Price */}
-				<div>
-					<label className="block text-base font-medium mb-1">Price</label>
-					<Input placeholder="Price" {...register("price")} />
-					{errors.price && (
-						<p className="text-red-500 text-base mt-1">
-							{errors.price.message}
-						</p>
-					)}
-				</div>
-
-				{/* Picture Upload */}
-				<div>
-					<label className="block text-base font-medium mb-1">Picture</label>
-					<Input
-						type="file"
-						accept="image/*"
-						// We use a custom onChange to capture the File from event.target.files[0]
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-							if (e.target.files && e.target.files[0]) {
-								setValue("picture_data", e.target.files[0], {
-									shouldValidate: true,
-								});
-							}
-						}}
-						className="block w-full text-gray-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:font-semibold file:bg-gray-50"
+					{/* Description */}
+					<FormField
+						control={form.control}
+						name="description"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Description</FormLabel>
+								<FormControl>
+									<Textarea placeholder="Item description" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
 					/>
-					{errors.picture_data && (
-						<p className="text-red-500 mt-1">
-							{errors.picture_data.message as string}
-						</p>
-					)}
-				</div>
 
-				{/* Category */}
-				<div>
-					<label className="block text-base font-medium mb-1">Category</label>
-					<Controller
-						control={control}
+					{/* Price */}
+					<FormField
+						control={form.control}
+						name="price"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Price</FormLabel>
+								<FormControl>
+									<Input placeholder="Price" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					{/* Picture Upload */}
+					<FormField
+						control={form.control}
+						name="picture_file"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Picture</FormLabel>
+								<FormControl>
+									<Input
+										type="file"
+										accept="image/*"
+										onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+											if (e.target.files && e.target.files[0]) {
+												field.onChange(e.target.files[0]);
+											}
+										}}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+
+					{/* Category */}
+					<FormField
+						control={form.control}
 						name="category"
 						render={({ field }) => (
-							<Select
-								onValueChange={field.onChange}
-								value={field.value}
-								defaultValue=""
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a category" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Jackets">Jackets</SelectItem>
-									<SelectItem value="Tops">Tops</SelectItem>
-									<SelectItem value="Bottoms">Bottoms</SelectItem>
-									<SelectItem value="Shoes">Shoes</SelectItem>
-									<SelectItem value="Hats">Hats</SelectItem>
-									<SelectItem value="Accessories">Accessories</SelectItem>
-									<SelectItem value="Misc">Misc</SelectItem>
-								</SelectContent>
-							</Select>
+							<FormItem>
+								<FormLabel>Category</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger>
+											<SelectValue placeholder="Select a category" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="Jackets">Jackets</SelectItem>
+											<SelectItem value="Tops">Tops</SelectItem>
+											<SelectItem value="Bottoms">Bottoms</SelectItem>
+											<SelectItem value="Shoes">Shoes</SelectItem>
+											<SelectItem value="Hats">Hats</SelectItem>
+											<SelectItem value="Accessories">Accessories</SelectItem>
+											<SelectItem value="Misc">Misc</SelectItem>
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
-					{errors.category && (
-						<p className="text-red-500 mt-1">{errors.category.message}</p>
-					)}
-				</div>
 
-				{/* Gender */}
-				<div>
-					<label className="block text-base font-medium mb-1">Gender</label>
-					<Controller
-						control={control}
+					{/* Gender */}
+					<FormField
+						control={form.control}
 						name="gender"
 						render={({ field }) => (
-							<Select
-								onValueChange={field.onChange}
-								value={field.value}
-								defaultValue=""
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select gender" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Mens">Men</SelectItem>
-									<SelectItem value="Womens">Women</SelectItem>
-									<SelectItem value="Gender Neutral">Gender Neutral</SelectItem>
-								</SelectContent>
-							</Select>
+							<FormItem>
+								<FormLabel>Gender</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger>
+											<SelectValue placeholder="Select gender" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="Men">Men</SelectItem>
+											<SelectItem value="Women">Women</SelectItem>
+											<SelectItem value="Gender Neutral">
+												Gender Neutral
+											</SelectItem>
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
-					{errors.condition && (
-						<p className="text-red-500 mt-1">{errors.condition.message}</p>
-					)}
-				</div>
 
-				{/* Condition */}
-				<div>
-					<label className="block text-base font-medium mb-1">Condition</label>
-					<Controller
-						control={control}
+					{/* Condition */}
+					<FormField
+						control={form.control}
 						name="condition"
 						render={({ field }) => (
-							<Select
-								onValueChange={field.onChange}
-								value={field.value}
-								defaultValue=""
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select condition" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Excellent">Excellent</SelectItem>
-									<SelectItem value="Good">Good</SelectItem>
-									<SelectItem value="Fair">Fair</SelectItem>
-								</SelectContent>
-							</Select>
+							<FormItem>
+								<FormLabel>Condition</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger>
+											<SelectValue placeholder="Select condition" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="Excellent">Excellent</SelectItem>
+											<SelectItem value="Good">Good</SelectItem>
+											<SelectItem value="Fair">Fair</SelectItem>
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
-					{errors.condition && (
-						<p className="text-red-500 text-base mt-1">
-							{errors.condition.message}
-						</p>
-					)}
-				</div>
 
-				{/* Color */}
-				<div>
-					<label className="block text-base font-medium mb-1">Color</label>
-					<Controller
-						control={control}
+					{/* Color */}
+					<FormField
+						control={form.control}
 						name="color"
 						render={({ field }) => (
-							<Select
-								onValueChange={field.onChange}
-								value={field.value}
-								defaultValue=""
-							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select color" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="Red">Red</SelectItem>
-									<SelectItem value="Blue">Blue</SelectItem>
-									<SelectItem value="Green">Green</SelectItem>
-									<SelectItem value="Yellow">Yellow</SelectItem>
-									<SelectItem value="Black">Black</SelectItem>
-									<SelectItem value="White">White</SelectItem>
-									<SelectItem value="Purple">Purple</SelectItem>
-									<SelectItem value="Pink">Pink</SelectItem>
-									<SelectItem value="Orange">Orange</SelectItem>
-									<SelectItem value="Brown">Brown</SelectItem>
-								</SelectContent>
-							</Select>
+							<FormItem>
+								<FormLabel>Color</FormLabel>
+								<FormControl>
+									<Select onValueChange={field.onChange} value={field.value}>
+										<SelectTrigger>
+											<SelectValue placeholder="Select color" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="Red">Red</SelectItem>
+											<SelectItem value="Blue">Blue</SelectItem>
+											<SelectItem value="Green">Green</SelectItem>
+											<SelectItem value="Yellow">Yellow</SelectItem>
+											<SelectItem value="Black">Black</SelectItem>
+											<SelectItem value="White">White</SelectItem>
+											<SelectItem value="Purple">Purple</SelectItem>
+											<SelectItem value="Pink">Pink</SelectItem>
+											<SelectItem value="Orange">Orange</SelectItem>
+											<SelectItem value="Brown">Brown</SelectItem>
+										</SelectContent>
+									</Select>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
 						)}
 					/>
-					{errors.color && (
-						<p className="text-red-500 text-base mt-1">
-							{errors.color.message}
-						</p>
-					)}
-				</div>
 
-				{/* Size */}
-				<div>
-					<label className="block text-base font-medium mb-1">Size</label>
-					<Input placeholder="Size" {...register("size")} />
-					{errors.size && (
-						<p className="text-red-500 text-base mt-1">{errors.size.message}</p>
-					)}
-				</div>
+					{/* Size */}
+					<FormField
+						control={form.control}
+						name="size"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Size</FormLabel>
+								<FormControl>
+									<Input placeholder="Size" {...field} />
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 
-				<Button type="submit" className="mt-4 w-full">
-					Submit
-				</Button>
-			</form>
+					<Button type="submit" className="mt-4 w-full">
+						Submit
+					</Button>
+				</form>
+			</Form>
 		</div>
 	);
 }
