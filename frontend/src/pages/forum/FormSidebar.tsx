@@ -1,55 +1,109 @@
-import React from "react";
-import Sidebar from "@/components/ui/sidebar";
-import { Home, MessageSquare, Store, User } from "lucide-react";
+import React, { useState } from "react";
+import { Search, Funnel, ChevronDown, ChevronUp } from "lucide-react";
 
-export default function ForumSidebar() {
-	return (
-		<Sidebar>
-			<nav>
-				<ul className="space-y-4">
-					<li>
-						<a
-							href="/"
-							className="flex items-center gap-3 p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200 transition-all duration-200"
-							title="Home"
-						>
-							<Home size={24} className="min-w-[24px]" />
-							<span className="truncate">Home</span>
-						</a>
-					</li>
-					<li>
-						<a
-							href="/forum"
-							className="flex items-center gap-3 p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200 transition-all duration-200"
-							title="Forum"
-						>
-							<MessageSquare size={24} className="min-w-[24px]" />
-							<span className="truncate">Forum</span>
-						</a>
-					</li>
-					<li>
-						<a
-							href="/store"
-							className="flex items-center gap-3 p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200 transition-all duration-200"
-							title="Categories"
-						>
-							<Store size={24} className="min-w-[24px]" />
-							<span className="truncate">Store</span>
-						</a>
-					</li>
-					<li>
-						{/* Placeholder profile */}
-						<a
-							href="/profile/1"
-							className="flex items-center gap-3 p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200 transition-all duration-200"
-							title="Profile"
-						>
-							<User size={24} className="min-w-[24px]" />
-							<span className="truncate">Profile</span>
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</Sidebar>
-	);
+const filters = [
+    {
+        label: "Category",
+        type: "checkbox",
+        options: ["one", "two", "three"],
+    },
+    {
+        label: "Tags",
+        type: "checkbox",
+        options: ["oneone", "twotwo", "threethree", "fourfour"],
+    },
+];
+
+interface ForumSidebarProps {
+    isCollapsed?: boolean;
+}
+
+export default function ForumSidebar({ isCollapsed = false }: ForumSidebarProps) { 
+    const [showFilters, setShowFilters] = useState(false);
+    const [selectedFilters, setSelectedFilters] = useState<{ [key: string]: string[] }>({});
+
+    const handleFilterToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!isCollapsed) {
+            setShowFilters(!showFilters);
+        }
+        else {
+            setShowFilters(false);
+        }
+    };
+
+    const handleCheckboxChange = (filterLabel: string, option: string, isChecked: boolean) => {
+        setSelectedFilters(prev => {
+            const currentOptions = prev[filterLabel] || [];
+            let updatedFilters;
+            if (isChecked) {
+                updatedFilters = { ...prev, [filterLabel]: [...currentOptions, option] };
+            } else {
+                updatedFilters = { ...prev, [filterLabel]: currentOptions.filter(o => o !== option) };
+            }
+            console.log("Selected Filters:", updatedFilters);
+            return updatedFilters;
+        });
+    };
+
+    const navItemClasses = `flex items-center p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-gray-200/20 transition-all duration-200 w-full`;
+    const layoutClasses = isCollapsed ? 'justify-center' : 'gap-3';
+
+    return (
+        <nav>
+            <ul className="space-y-2">
+                <li>
+                    <a href="/"
+                        className={`${navItemClasses} ${layoutClasses}`}
+                        title="Search">
+                        <Search size={24} className="min-w-[24px]" />
+                        {!isCollapsed && <span className="truncate font-medium">Search</span>}
+                    </a>
+                </li>
+
+                <li className="space-y-1">
+                    <button
+                        onClick={handleFilterToggle}
+                        className={`${navItemClasses} ${layoutClasses} justify-between`}
+                        title="Filters"
+                        aria-expanded={showFilters && !isCollapsed}
+                        aria-controls="filter-options">
+                        <div className={`flex items-center ${layoutClasses}`}>
+                            <Funnel size={24} className="min-w-[24px]" />
+                            {!isCollapsed && <span className="truncate font-medium">Filters</span>}
+                        </div>
+                        {!isCollapsed && (
+                            showFilters ? <ChevronUp size={18} /> : <ChevronDown size={18} />
+                        )}
+                    </button>
+
+                    {showFilters && !isCollapsed && (
+                        <div id="filter-options" className="pl-9 pr-3 pb-2 space-y-3 text-white animate-fade-in-down">
+                            {filters.map((filterGroup) => (
+                                <div key={filterGroup.label} className="pt-2 border-t border-gray-500 first:border-t-0 first:pt-0">
+                                    <h4 className="mb-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+                                        {filterGroup.label}
+                                    </h4>
+                                    <ul className="space-y-1">
+                                        {filterGroup.options.map((option) => (
+                                            <li key={option}>
+                                                <label className="flex items-center gap-2 cursor-pointer text-sm text-white hover:text-grey transition-colors duration-150">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-[#DB572C]  text-[#DB572C] focus:ring-2 focus:ring-[#DB572C] focus:ring-offset-0"
+                                                        checked={selectedFilters[filterGroup.label]?.includes(option) || false}
+                                                        onChange={(e) => handleCheckboxChange(filterGroup.label, option, e.target.checked)}/>
+                                                    {option}
+                                                </label>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </li>
+            </ul>
+        </nav>
+    );
 }
