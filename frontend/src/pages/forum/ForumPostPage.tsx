@@ -2,15 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CategoryType, categoryColors, defaultColors, ForumPost, posts } from "./ForumConstants";
 
-
-interface ForumPost {
-  id: number;
-  title: string;
-  author: string;
-  date: string;
-  content: string;
-}
 
 interface Comment {
   id: number;
@@ -18,30 +11,6 @@ interface Comment {
   date: string;
   text: string;
 }
-
-const duposts: ForumPost[] = [
-  {
-    id: 1,
-    title: "1st",
-    author: "1",
-    date: "2025-04-01",
-    content: "Well well well well well well well well well",
-  },
-  {
-    id: 2,
-    title: "2nd",
-    author: "Ugz",
-    date: "2025-04-02",
-    content: "what what what what what what what what",
-  },
-  {
-    id: 3,
-    title: "3rd",
-    author: "Mountaint0psEAcret",
-    date: "2025-04-03",
-    content: "Do we have something interesting here?",
-  },
-];
 
 const ducomments: Comment[] = [
   { id: 1, author: "Ug", date: "2025-04-04", text: "nice" },
@@ -56,19 +25,18 @@ export default function ForumPostPage() {
   const [newComment, setNewComment] = useState("");
 
   useEffect(() => {
-
-    const foundPost = duposts.find((p) => p.id === Number(postId));
+    const foundPost = posts.find((p) => p.id === Number(postId));
     setPost(foundPost || null);
 
     setComments(ducomments);
-  }, [postId]);
+  }, [postId]); 
 
   const handleAddComment = () => {
     if (newComment.trim() === "" || !post) return;
 
     const comment: Comment = {
       id: comments.length + 1,
-      author: "Current User", 
+      author: "Current User",
       date: new Date().toISOString().split("T")[0],
       text: newComment,
     };
@@ -84,6 +52,10 @@ export default function ForumPostPage() {
     );
   }
 
+  const colors = categoryColors[post.category] || defaultColors;
+  const categoryButtonClassName = `flex gap-0.5 px-1 py-0.5 text-white rounded cursor-pointer hover:text-white text-xs mb-2
+    ${colors.bgColor} ${colors.hoverColor}`;
+
   return (
     <div className="max-w-3xl mx-auto p-4">
       <Link to="/forum" className="flex items-center text-blue-500 mb-4">
@@ -92,14 +64,17 @@ export default function ForumPostPage() {
       </Link>
       <article className="bg-gray-50 p-10 rounded shadow">
         <h1 className="text-3xl font-bold mb-2">{post.title}</h1>
-        <div className="text-sm text-gray-600 mb-4">
+        <button className={categoryButtonClassName}>
+          {post.category}
+        </button>
+        <div className="text-sm text-gray-600 mb-4 mt-2">
           Posted by {post.author} on {post.date}
         </div>
         <p className="text-gray-800">{post.content}</p>
       </article>
       <section className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Comments</h2>
-     
+
         <div className="mb-6">
           <textarea
             className="w-full p-2 border rounded mb-2"
