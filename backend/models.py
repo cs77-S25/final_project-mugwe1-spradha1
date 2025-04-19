@@ -60,6 +60,7 @@ class ForumPost(db.Model):
     title = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     photo_data = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
@@ -73,6 +74,7 @@ class ForumPost(db.Model):
             "title": self.title,
             "user_id": self.user_id,
             "content": self.content,
+            "category": self.category, 
             "photo_data": self.photo_data.encode('utf-8') if self.photo_data else None,
             "created_at": self.created_at,
         }
