@@ -1,34 +1,42 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike
 from datetime import datetime
 import os
+from google.auth.transport import requests
+from google.oauth2 import id_token
+import jwt
+from datetime import timedelta
+from functools import wraps
+
 
 app = Flask(__name__)
 
 # Configure database
 app.config['CACHE_TYPE'] = 'null' # disable if in production environment
-app.config['SECRET_KEY'] = 'secret key'
+app.config['SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'super-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Enable CORS
-CORS(app)
+CORS(app, supports_credentials=True, origins= "http://localhost:5173")
 
 mock_users = [
     {
         "id": 0,
-        "name": "Summit Pradhan",
-        "email": "spradha1@swarthmore.edu",
+        "name": "Billy Bob",
+        "email": "bbob7@swarthmore.edu",
         "created_at": "2023-10-01 12:00:00",
-        "bio": "Hi, I'm Summit! I love thrifting and finding unique pieces. I enjoy playing the guitar, cooking, and traveling.",
+        "profile_picture_url": "https://t4.ftcdn.net/jpg/00/56/93/53/360_F_56935312_NiqxkRKOdGSJd86Tc2uLycL9fkUsIlRW.jpg",
+        "bio": "Hi, I'm Billy Bob! I love thrifting and finding unique pieces. I enjoy playing the guitar, cooking, and traveling.",
     },
      {
         "id": 1,
         "name": "John Doe",
         "email": "jdoe6@swarthmore.edu",
         "created_at": "2025-12-01 12:00:00",
+        "profile_picture_url": "https://thumbs.dreamstime.com/b/cool-kid-10482439.jpg",
         "bio": "Yo I'm John. Who are you?",
     },
 ]
@@ -152,7 +160,8 @@ def add_mock_data():
             name=user_data["name"],
             email=user_data["email"],
             created_at=created_at,
-            bio=user_data.get("bio")
+            bio=user_data.get("bio"),
+            profile_picture_url=user_data.get("profile_picture_url")
         )
         db.session.add(user)
     db.session.commit()
@@ -202,14 +211,47 @@ with app.app_context():
     # add mock data to the database
     add_mock_data()
 
+# Auth helper function to verify and decode JWT tokens
+def decode_access_token(token):
+    try:
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except ValueError as e:
+        return None
+    return data
+
+# Decorator to check if the user is authenticated
+# Returns token_data to the function if authenticated, otherwise returns 401
+def validate_authentication():
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            token = request.cookies.get('access_token')
+            if not token:
+                print("ERROR: No token found")
+                return make_response(jsonify({"error": "Not authenticated"}), 401)
+            
+            token_data = decode_access_token(token)
+            if not token_data:
+                print("ERROR: Invalid token")
+                return make_response(jsonify({"error": "Invalid authentication token"}), 401)
+            
+            # Pass token data to the route handler
+            return f(token_data, *args, **kwargs)
+        return decorated_function
+    return decorator
+
+## STORE ITEMS 
 @app.route('/store-items', methods=['GET'])
-def get_store_items():
-    items = ItemListing.query.all()
+@validate_authentication()
+def get_store_items(token_data):
+    # return all items in order of most recent
+    items = ItemListing.query.order_by(ItemListing.created_at.desc()).all()
     items_list = [item.serialize() for item in items]
     return make_response(jsonify(items_list), 200)
 
 @app.route('/store-items/<int:item_id>', methods=['GET'])
-def get_store_item(item_id):
+@validate_authentication()
+def get_store_item(token_data, item_id):
     # also fetch User data (name, email)
     item = ItemListing.query.filter_by(id=item_id).first()
     if not item:
@@ -225,15 +267,30 @@ def get_store_item(item_id):
     response["user_email"] = user_data["email"]
     return make_response(jsonify(response), 200)
 
+# USER
 @app.route('/user/<int:user_id>', methods=['GET'])
-def get_user(user_id):
+@validate_authentication()
+def get_user(token_data, user_id):
+    token = request.cookies.get('access_token')
+    if not token:
+        print("STORE ITEMS: No token found")
+        return make_response(jsonify({"error":"Not authenticated"}), 401)
+    token_data = decode_access_token(token)
+    if not token_data:
+        print("STORE ITEMS: Invalid token")
+        return make_response(jsonify({"error":"Invalid authentication token"}), 401)
+    # user must be logged in to view store items
+    token = request.cookies.get('access_token')
+
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return make_response(jsonify({"error": "User not found"}), 404)
     return make_response(jsonify(user.serialize()), 200)
 
+## STORE ITEMS BY USER (for profile page)
 @app.route('/user/<int:user_id>/store-items', methods=['GET'])
-def get_user_items(user_id):
+@validate_authentication()
+def get_user_items(token_data, user_id):
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return make_response(jsonify({"error": "User not found"}), 404)
@@ -241,15 +298,21 @@ def get_user_items(user_id):
     items_list = [item.serialize() for item in items]
     return make_response(jsonify(items_list), 200)
 
-# Upload store item 
+# UPLOAD STORE ITEM
 @app.route('/store-items', methods=['POST'])
-def upload_store_item():
+@validate_authentication()
+def upload_store_item(token_data):
+    # verify that the id from the token matches the user_id in the request
+    user_id = request.form.get('user_id')
+    if not user_id or int(user_id) != token_data['user_id']:
+        print("ERROR: User ID from token does not match user ID in request")
+        return make_response(jsonify({"error": "User ID mismatch"}), 403)
+    
     picture_file = request.files.get('picture_file')
     if not picture_file:
         print("Picture file not found in request")
         return make_response(jsonify({"error": "No picture file uploaded"}), 400)
 
-    user_id = request.form.get('user_id')
     title = request.form.get('title')
     description = request.form.get('description')
     price = request.form.get('price')
@@ -291,9 +354,106 @@ def upload_store_item():
     temp_response = {"message": "Item successfully uploaded!"}
     return make_response(jsonify(temp_response), 201)
 
+@app.route('/login', methods=['POST'])
+def login():
+    try:
+        print("Login request received")
+        args = request.get_json() or {}
+        google_token = args.get('google_token')
+        if not google_token:
+            print("ERROR: Missing token")
+            return make_response(jsonify({"error": "Token is required"}), 400)
 
+        # Verify that token is valid via Google
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                google_token,
+                requests.Request(),
+                os.getenv("GOOGLE_CLIENT_ID")
+            )
+        except ValueError:
+            print("ERROR: Invalid token")
+            return make_response(jsonify({"error": "Invalid Token"}), 400)
 
+        # Check if the user already exists in the database
+        user = User.query.filter_by(email=idinfo['email']).first()
+
+        # If user does not exist, create a new user
+        if not user:
+            # Issue: The query string from google messes with the image
+            raw_picture_url = idinfo.get('picture') or ""
+            modified_picture_url = raw_picture_url.split('=', 1)[0] if '=' in raw_picture_url else raw_picture_url
+            user = User(
+                name=idinfo.get('name'),
+                email=idinfo.get('email'),
+                bio="",
+                profile_picture_url=modified_picture_url,
+            )
+            db.session.add(user)
+            db.session.commit()
+            print("LOGIN: New user added to database")
+
+        # Create a new JWT token for the user
+        payload = {
+            'user_id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'exp': datetime.now() + timedelta(hours=24)
+        }
+        jwt_token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+
+        # Create a response and set the JWT as an HttpOnly cookie
+        # NOTE: we need to update secure and samesite when deploying to production
+        resp = make_response(jsonify({"message": "Login successful"}), 200)
+        resp.set_cookie(
+            'access_token',
+            jwt_token,
+            path='/',
+            httponly=True,
+            secure=False,
+            samesite='Lax',
+            max_age=24 * 60 * 60
+        )
+
+        # Re-apply CORS headers for credentialed requests
+        resp.headers["Access-Control-Allow-Origin"] = "http://localhost:5173"
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+
+        return resp
+
+    except Exception as error:
+        print(error)
+        return make_response(jsonify({"error": str(error)}), 400)
+
+@app.route('/logout', methods=['POST', 'OPTIONS'])
+def logout():
+    #deletes token cookie from user 
+    resp = make_response()
+    if "access_token" in request.cookies:
+        resp.set_cookie('access_token', '', expires=0, secure=True, samesite="None", httponly=True)
+    return resp
+
+# Get the current user's information (aka "me")
+@app.route('/me', methods=['GET', 'OPTIONS'])
+def me():
+    # validate that the JWT exists and is valid
+    token = request.cookies.get('access_token')
+    if not token:
+        print("ERROR: No token found")
+        return jsonify({"error":"Not authenticated"}), 401
+    try:
+        data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        print("ERROR: Token expired")
+        return jsonify({"error":"Token expired"}), 401
+    # get user info from the database
+    user = User.query.filter_by(id=data['user_id']).first()
+    if not user:
+        print("ERROR: User not found")
+        return jsonify({"error":"User not found"}), 404
+    # return user info
+    return jsonify({"user_data": user.serialize()}), 200
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="localhost", port="5001", debug=True)

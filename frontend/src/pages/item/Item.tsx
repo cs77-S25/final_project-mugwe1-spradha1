@@ -20,9 +20,7 @@ export default function Item() {
 
 		const fetchItem = async () => {
 			try {
-				const response = await fetch(
-					`http://127.0.0.1:5000/store-items/${itemId}`
-				);
+				const response = await fetch(`/api/store-items/${itemId}`);
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}

@@ -8,9 +8,10 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     bio = db.Column(db.Text, nullable=True)
+    profile_picture_url = db.Column(db.String(255), nullable=True)
 
     def __repr__(self) -> str:
-        string = f"ID: {self.id}, Name: {self.name}, Email: {self.email}, Created_At: {self.created_at}"
+        string = f"ID: {self.id}, Name: {self.name}, Email: {self.email}, Created_At: {self.created_at}, Bio: {self.bio}, Profile_Picture_URL: {self.profile_picture_url}"
         return string
 
     def serialize(self):
@@ -20,6 +21,7 @@ class User(db.Model):
             "email": self.email,
             "created_at": self.created_at,
             "bio": self.bio,
+            "profile_picture_url": self.profile_picture_url,
         }
 
 class ItemListing(db.Model):

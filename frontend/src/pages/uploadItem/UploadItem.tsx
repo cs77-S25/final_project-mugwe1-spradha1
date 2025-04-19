@@ -23,6 +23,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 
+import { useAuth } from "@/context/UserContext";
+
+import { Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
 const MAX_FILE_SIZE = 5000000;
 const VALID_FILE_TYPES = [
 	"image/jpeg",
@@ -102,12 +107,26 @@ export default function UploadItem() {
 		},
 	});
 
+	// Auth context
+	const userAuth = useAuth();
+
+	// keep track of submission status
+	const { isSubmitting } = form.formState;
+
+	// Navigate
+	const navigate = useNavigate();
+
 	const onSubmit = async (data: StoreItemFormValues) => {
 		// Using formData to handle file upload
 		const formData = new FormData();
 
+		if (!userAuth || !userAuth.user) {
+			console.error("User not authenticated");
+			return;
+		}
+
 		// Append text fields
-		formData.append("user_id", "0"); // Note: values must be strings.
+		formData.append("user_id", userAuth.user.id.toString());
 		formData.append("title", data.title);
 		formData.append("description", data.description);
 		formData.append("price", parseFloat(data.price).toString());
@@ -121,15 +140,16 @@ export default function UploadItem() {
 		formData.append("picture_file", data.picture_file);
 
 		try {
-			const response = await fetch("http://127.0.0.1:5000/store-items", {
+			const response = await fetch("/api/store-items", {
 				method: "POST",
 				body: formData,
 			});
 			if (!response.ok) {
 				throw new Error("Failed to upload item");
 			}
-			const result = await response.json();
-			console.log(result);
+
+			// On success, redirect to the store page
+			navigate("/store");
 		} catch (error) {
 			console.error("Error uploading item:", error);
 		}
@@ -151,7 +171,7 @@ export default function UploadItem() {
 							<FormItem>
 								<FormLabel>Title</FormLabel>
 								<FormControl>
-									<Input placeholder="Item title" {...field} />
+									<Input placeholder="ex: 'Super cool jacket'" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -166,7 +186,10 @@ export default function UploadItem() {
 							<FormItem>
 								<FormLabel>Description</FormLabel>
 								<FormControl>
-									<Textarea placeholder="Item description" {...field} />
+									<Textarea
+										placeholder="ex: 'Please buy this super cool jacket 🥺'"
+										{...field}
+									/>
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -181,7 +204,7 @@ export default function UploadItem() {
 							<FormItem>
 								<FormLabel>Price</FormLabel>
 								<FormControl>
-									<Input placeholder="Price" {...field} />
+									<Input placeholder="$$$" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -335,8 +358,9 @@ export default function UploadItem() {
 						)}
 					/>
 
-					<Button type="submit" className="mt-4 w-full">
-						Submit
+					<Button type="submit" className="mt-4 w-full" disabled={isSubmitting}>
+						{isSubmitting && <Loader2 className="animate-spin" />}
+						{isSubmitting ? "Submitting..." : "Submit"}
 					</Button>
 				</form>
 			</Form>

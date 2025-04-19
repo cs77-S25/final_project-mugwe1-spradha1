@@ -6,8 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StoreItemCard } from "@/pages/store/storeItemCard";
 
-// Mock Data until backend is ready
-
 export default function Profile() {
 	const params = useParams();
 	// Will be used later to fetch user data
@@ -24,7 +22,7 @@ export default function Profile() {
 
 		const fetchProfileUser = async () => {
 			try {
-				const response = await fetch(`http://127.0.0.1:5000/user/${userId}`);
+				const response = await fetch(`/api/user/${userId}`);
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}
@@ -37,9 +35,7 @@ export default function Profile() {
 
 		const fetchProfileStoreItems = async () => {
 			try {
-				const response = await fetch(
-					`http://127.0.0.1:5000/user/${userId}/store-items`
-				);
+				const response = await fetch(`/api/user/${userId}/store-items`);
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}
@@ -79,8 +75,9 @@ export default function Profile() {
 				<div className="flex items-center mb-4">
 					<Avatar className="h-20 w-20">
 						<AvatarImage
-							src="https://github.com/mountaint0p.png"
+							src={profileUser.profile_picture_url}
 							alt="User Avatar"
+							referrerPolicy="no-referrer"
 						/>
 						<AvatarFallback>SP</AvatarFallback>
 					</Avatar>
@@ -89,7 +86,9 @@ export default function Profile() {
 					</div>
 				</div>
 				<div className="text-2xl font-bold mb-4">Bio</div>
-				<div className="text-base mb-4 w-1/3">{profileUser.bio}</div>
+				<div className="text-base mb-4 w-1/3">
+					{profileUser.bio.length > 0 ? profileUser.bio : "No bio written yet"}
+				</div>
 				<div className="text-2xl font-bold mb-4">Stats</div>
 				<div className="grid grid-cols-4 gap-4 w-full mt-4">
 					<div className="flex flex-col items-center">
@@ -117,12 +116,10 @@ export default function Profile() {
 						<TabsTrigger value="forum">Forum</TabsTrigger>
 					</TabsList>
 					<TabsContent value="selling">
+						{profileStoreItems.length === 0 && (
+							<div className="mt-4 text-center">No listed store items yet.</div>
+						)}
 						<div className="grid grid-cols-4 gap-4 mt-4">
-							{profileStoreItems.length === 0 && (
-								<div className="mt-4 text-center">
-									No listed store items yet.
-								</div>
-							)}
 							{profileStoreItems.map((item) => (
 								<StoreItemCard key={item.id} storeItem={item} />
 							))}

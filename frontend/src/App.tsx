@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import Store from "@/pages/store/Store";
 import Forum from "@/pages/forum/Forum";
 import Home from "@/pages/home/Home";
@@ -10,12 +10,11 @@ import ForumPostPage from "@/pages/forum/ForumPostPage";
 import "./app.css";
 
 function App() {
-	const location = useLocation();
-	const isHomePage = location.pathname === "/";
 	return (
 		<>
 			{/* Navbar component */}
-			{!isHomePage && <Navbar />}
+			<Navbar />
+			{/* Main content area */}
 			<Routes>
 				{/* Defining routes for all paths on the website*/}
 				<Route path="/" element={<Home />} />

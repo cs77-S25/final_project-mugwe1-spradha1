@@ -212,7 +212,7 @@ export default function Store() {
 		const fetchStoreItems = async () => {
 			try {
 				setLoading(true);
-				const response = await fetch("http://127.0.0.1:5000/store-items");
+				const response = await fetch("/api/store-items");
 				const data = await response.json();
 				console.log("Fetched store items:", data);
 				setStoreItems(data);
