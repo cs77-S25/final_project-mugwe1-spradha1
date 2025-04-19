@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StoreItemCard } from "@/pages/store/storeItemCard";
+import { getInitials } from "@/lib/utils";
 
 export default function Profile() {
 	const params = useParams();
@@ -14,6 +15,7 @@ export default function Profile() {
 	}
 	const [profileUser, setProfileUser] = useState<User | null>(null);
 	const [profileStoreItems, setProfileStoreItems] = useState<StoreItem[]>([]);
+	const [profileLikedItems, setProfileLikedItems] = useState<StoreItem[]>([]);
 	const [loading, setLoading] = useState(true);
 	const userId = parseInt(params.userId);
 
@@ -46,9 +48,24 @@ export default function Profile() {
 			}
 		};
 
+		const fetchProfileLikedItems = async () => {
+			try {
+				const response = await fetch(`/api/user/${userId}/liked-items`);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
+				const data = await response.json();
+				console.log(data);
+				setProfileLikedItems(data);
+			} catch (error) {
+				console.error("Error fetching user:", error);
+			}
+		};
+
 		setLoading(true);
 		fetchProfileUser();
 		fetchProfileStoreItems();
+		fetchProfileLikedItems();
 		setLoading(false);
 	}, [userId]);
 
@@ -79,7 +96,7 @@ export default function Profile() {
 							alt="User Avatar"
 							referrerPolicy="no-referrer"
 						/>
-						<AvatarFallback>SP</AvatarFallback>
+						<AvatarFallback>{getInitials(profileUser.name)}</AvatarFallback>
 					</Avatar>
 					<div>
 						<div className="text-lg font-bold ml-4">{profileUser.name}</div>
@@ -126,7 +143,14 @@ export default function Profile() {
 						</div>
 					</TabsContent>
 					<TabsContent value="liked">
-						<div className="mt-4 text-center">No liked store items yet.</div>
+						{profileLikedItems.length === 0 && (
+							<div className="mt-4 text-center">No liked store items yet.</div>
+						)}
+						<div className="grid grid-cols-4 gap-4 mt-4">
+							{profileLikedItems.map((item) => (
+								<StoreItemCard key={item.id} storeItem={item} />
+							))}
+						</div>
 					</TabsContent>
 					<TabsContent value="forum">
 						<div className="mt-4 text-center">No forum posts yet.</div>

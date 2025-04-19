@@ -117,18 +117,18 @@ class ForumLike(db.Model):
 
 class ItemLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    item_listing_id = db.Column(db.Integer, db.ForeignKey('item_listing.id'), nullable=False)
+    item_id = db.Column(db.Integer, db.ForeignKey('item_listing.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     def __repr__(self) -> str:
-        string = f"ID: {self.id}, Item_Listing_ID: {self.item_listing_id}, User_ID: {self.user_id}, Created_At: {self.created_at}"
+        string = f"ID: {self.id}, Item_ID: {self.item_id}, User_ID: {self.user_id}, Created_At: {self.created_at}"
         return string
 
     def serialize(self):
         return {
             "id": self.id,
-            "item_listing_id": self.item_listing_id,
+            "item_id": self.item_id,
             "user_id": self.user_id,
             "created_at": self.created_at,
         }

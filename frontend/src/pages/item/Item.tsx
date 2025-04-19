@@ -4,12 +4,17 @@ import { StoreItemWithUser } from "@/types/StoreItemWithUser";
 import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 
 export default function Item() {
 	const [storeItem, setStoreItem] = React.useState<StoreItemWithUser | null>(
 		null
 	);
 	const [loading, setLoading] = React.useState(true);
+	const [heart, setHeart] = React.useState(false);
+	const [heartLoading, setHeartLoading] = React.useState(false);
+	const [likeCount, setLikeCount] = React.useState(0);
+
 	const params = useParams();
 	if (!params.itemId) {
 		return <div>Invalid Route</div>;
@@ -35,6 +40,31 @@ export default function Item() {
 		fetchItem();
 		setLoading(false);
 	}, []);
+
+	useEffect(() => {
+		if (storeItem) {
+			setHeart(storeItem.liked);
+			setLikeCount(storeItem.like_count);
+		}
+	}, [storeItem]);
+
+	const handleHeartClick = async () => {
+		if (heartLoading) return;
+		setHeartLoading(true);
+		try {
+			const res = await fetch(`/api/store-items/${itemId}/like`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+			});
+			if (!res.ok) throw new Error(res.statusText);
+			setHeart((prev) => !prev);
+			setLikeCount((prev) => (heart ? prev - 1 : prev + 1));
+		} catch (err) {
+			console.error(err);
+		} finally {
+			setHeartLoading(false);
+		}
+	};
 
 	const imageDataUrl = `data:image/jpeg;base64,${storeItem?.picture_data}`;
 
@@ -82,6 +112,21 @@ export default function Item() {
 							${storeItem.price.toFixed(2)}
 						</p>
 						<div className="flex items-center mb-4">
+							<button
+								onClick={handleHeartClick}
+								disabled={heartLoading}
+								className="flex items-center justify-center"
+							>
+								<Heart
+									className="w-full h-full"
+									stroke="currentColor"
+									strokeWidth={2}
+									fill={heart ? "pink" : "none"}
+								/>
+							</button>
+							<span className="ml-2 text-gray-700 text-2xl">{likeCount}</span>
+						</div>
+						<div className="flex items-center mb-4">
 							<span className="text-gray-700 font-bold mr-2">Condition:</span>
 							<span className="text-gray-700">{storeItem.condition}</span>
 						</div>
@@ -100,12 +145,6 @@ export default function Item() {
 						<div className="flex items-center mb-4">
 							<span className="text-gray-700 font-bold mr-2">Color:</span>
 							<span className="text-gray-700">{storeItem.color}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">
-								Contact Info:
-							</span>
-							<span className="text-gray-700">{storeItem.user_email}</span>
 						</div>
 						<div className="mt-auto">
 							<Button

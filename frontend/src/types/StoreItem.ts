@@ -28,4 +28,6 @@ export interface StoreItem {
 		| "Orange"
 		| "Brown";
 	size: string;
+	liked: boolean;
+	like_count: number;
 }

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
-from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike
+from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike, ItemLike
 from datetime import datetime
 import os
 from google.auth.transport import requests
@@ -148,6 +148,19 @@ mock_item_listings = [
     },
 ]
 
+mock_item_likes = [
+    {
+        "id": 0,
+        "user_id": 0,
+        "item_id": 7,
+    },
+    {
+        "id": 1,
+        "user_id": 1,
+        "item_id": 0,
+    }
+]
+
 def add_mock_data():
     # insert user mock data
     for user_data in mock_users:
@@ -191,6 +204,16 @@ def add_mock_data():
             picture_data=picture_data
         )
         db.session.add(new_item)
+    db.session.commit()
+
+    # insert item like mock data
+    for like in mock_item_likes:
+        item_like = ItemLike(
+            id=like["id"],
+            user_id=like["user_id"],
+            item_id=like["item_id"]
+        )
+        db.session.add(item_like)
     db.session.commit()
 
     print("Mock data successfully added to the database.")
@@ -247,11 +270,17 @@ def get_store_items(token_data):
     # return all items in order of most recent
     items = ItemListing.query.order_by(ItemListing.created_at.desc()).all()
     items_list = [item.serialize() for item in items]
+    # also fetch whether the user has liked the item and total like count
+    for item in items_list:
+        item["liked"] = ItemLike.query.filter_by(item_id=item["id"], user_id=token_data["user_id"]).first() is not None
+        item["like_count"] = ItemLike.query.filter_by(item_id=item["id"]).count()
+
+    # NOTE: should probably paginate this in the future, oh well
     return make_response(jsonify(items_list), 200)
 
 @app.route('/store-items/<int:item_id>', methods=['GET'])
 @validate_authentication()
-def get_store_item(token_data, item_id):
+def get_store_item(token_data, item_id): 
     # also fetch User data (name, email)
     item = ItemListing.query.filter_by(id=item_id).first()
     if not item:
@@ -265,6 +294,10 @@ def get_store_item(token_data, item_id):
     response = item_data.copy() 
     response["user_name"] = user_data["name"]
     response["user_email"] = user_data["email"]
+
+    # also fetch whether the user has liked the item and total like count
+    response["liked"] = ItemLike.query.filter_by(item_id=item_id, user_id=token_data["user_id"]).first() is not None
+    response["like_count"] = ItemLike.query.filter_by(item_id=item_id).count()
     return make_response(jsonify(response), 200)
 
 # USER
@@ -453,6 +486,47 @@ def me():
         return jsonify({"error":"User not found"}), 404
     # return user info
     return jsonify({"user_data": user.serialize()}), 200
+
+@app.route('/store-items/<int:item_id>/like', methods=['POST'])
+@validate_authentication()
+def like_store_item(token_data, item_id):
+    user_id = token_data['user_id']
+
+    # Check if the item exists
+    item = ItemListing.query.filter_by(id=item_id).first()
+    if not item:
+        return make_response(jsonify({"error": "Item not found"}), 404)
+
+    # If user already has liked the item, unlike it
+    existing_like = ItemLike.query.filter_by(item_id=item_id, user_id=user_id).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        return make_response(jsonify({"message": "Item unliked successfully"}), 200)
+
+    # Otherwise, create a new like
+    new_like = ItemLike(item_id=item_id, user_id=user_id)
+    db.session.add(new_like)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Item liked successfully"}), 200)
+
+@app.route('/user/<int:user_id>/liked-items', methods=['GET'])
+@validate_authentication()
+def get_user_likes(token_data, user_id):
+    auth_user_id = token_data['user_id']
+    # Fetch all items the user liked in descending order of creation
+    user_likes = ItemLike.query.filter_by(user_id=user_id).order_by(ItemLike.created_at.desc()).all()
+    liked_items_list = []
+    for like in user_likes:
+        item = ItemListing.query.filter_by(id=like.item_id).first()
+        if item:
+            liked_item = item.serialize()
+            # Check if the authenticated user has liked the item
+            liked_item["liked"] = ItemLike.query.filter_by(item_id=item.id, user_id=auth_user_id).first() is not None
+            liked_item["like_count"] = ItemLike.query.filter_by(item_id=item.id).count()
+            liked_items_list.append(liked_item)
+    return make_response(jsonify(liked_items_list), 200)
 
 
 if __name__ == '__main__':

@@ -10,18 +10,7 @@ import {
 import LoginButton from "./loginButton";
 import { useAuth } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
-
-// Helper function to get initials from a full name
-function getInitials(fullName: string) {
-	if (typeof fullName !== "string") return "";
-
-	const parts = fullName.trim().split(" ");
-	if (parts.length === 0) return "";
-
-	const firstInitial = parts[0].charAt(0).toUpperCase();
-	const lastInitial = parts[parts.length - 1].charAt(0).toUpperCase();
-	return firstInitial + lastInitial;
-}
+import { getInitials } from "@/lib/utils";
 
 const AvatarDropdown = () => {
 	const userAuth = useAuth();
