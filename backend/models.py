@@ -1,5 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 import base64
+from datetime import datetime
 
 db = SQLAlchemy()
 class User(db.Model):
@@ -10,6 +11,12 @@ class User(db.Model):
     bio = db.Column(db.Text, nullable=True)
     profile_picture_url = db.Column(db.String(255), nullable=True)
 
+    forum_posts = db.relationship('ForumPost', backref='author', lazy=True)
+    forum_comments = db.relationship('ForumComment', backref='commenter', lazy=True)
+    forum_likes = db.relationship('ForumLike', backref='liker', lazy=True)
+    item_listings = db.relationship('ItemListing', backref='seller', lazy=True)
+    item_likes = db.relationship('ItemLike', backref='liker', lazy=True)
+
     def __repr__(self) -> str:
         string = f"ID: {self.id}, Name: {self.name}, Email: {self.email}, Created_At: {self.created_at}, Bio: {self.bio}, Profile_Picture_URL: {self.profile_picture_url}"
         return string
@@ -19,12 +26,13 @@ class User(db.Model):
             "id": self.id,
             "name": self.name,
             "email": self.email,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
             "bio": self.bio,
             "profile_picture_url": self.profile_picture_url,
         }
 
 class ItemListing(db.Model):
+    __tablename__ = 'item_listing'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -37,6 +45,8 @@ class ItemListing(db.Model):
     condition = db.Column(db.String(50), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     picture_data = db.Column(db.LargeBinary, nullable=False)
+
+    likes = db.relationship('ItemLike', backref='item', lazy=True)
 
     def serialize(self):
         encoded_picture = base64.b64encode(self.picture_data).decode('utf-8')
@@ -56,6 +66,7 @@ class ItemListing(db.Model):
         }
 
 class ForumPost(db.Model):
+    __tablename__ = 'forum_post'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -64,22 +75,31 @@ class ForumPost(db.Model):
     photo_data = db.Column(db.LargeBinary, nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
+    #explicit definition of relationships
+    comments = db.relationship('ForumComment', backref='post', lazy=True)
+    likes = db.relationship('ForumLike', backref='post', lazy=True)
+
     def __repr__(self) -> str:
         string = f"ID: {self.id}, Title: {self.title}, User_ID: {self.user_id}, Content: {self.content}, Created_At: {self.created_at}"
         return string
 
     def serialize(self):
+        encoded_photo = base64.b64encode(self.photo_data).decode('utf-8') if self.photo_data else None  
+        author_name = self.author.name if self.author else "Unknown User"
+        
         return {
             "id": self.id,
             "title": self.title,
             "user_id": self.user_id,
+            "author_name": author_name,
             "content": self.content,
             "category": self.category, 
-            "photo_data": self.photo_data.encode('utf-8') if self.photo_data else None,
-            "created_at": self.created_at,
+            "photo_data": encoded_photo,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
 class ForumComment(db.Model):
+    __tablename__ = 'forum_comment'
     id = db.Column(db.Integer, primary_key=True)
     forum_post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -91,15 +111,19 @@ class ForumComment(db.Model):
         return string
 
     def serialize(self):
+        commenter_name = self.commenter.name if self.commenter else "Unknown User"
+
         return {
             "id": self.id,
             "forum_post_id": self.forum_post_id,
             "user_id": self.user_id,
+            "commenter_name": commenter_name,
             "content": self.content,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
 class ForumLike(db.Model):
+    __tablename__ = 'forum_like'
     id = db.Column(db.Integer, primary_key=True)
     forum_post_id = db.Column(db.Integer, db.ForeignKey('forum_post.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -114,10 +138,11 @@ class ForumLike(db.Model):
             "id": self.id,
             "forum_post_id": self.forum_post_id,
             "user_id": self.user_id,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 
 class ItemLike(db.Model):
+    __tablename__ = 'item_like'
     id = db.Column(db.Integer, primary_key=True)
     item_id = db.Column(db.Integer, db.ForeignKey('item_listing.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -132,6 +157,6 @@ class ItemLike(db.Model):
             "id": self.id,
             "item_id": self.item_id,
             "user_id": self.user_id,
-            "created_at": self.created_at,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
         }
 

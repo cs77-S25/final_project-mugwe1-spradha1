@@ -15,44 +15,19 @@ export const defaultColors = {
 export interface ForumPost {
   id: number;
   title: string;
-  author: string;
-  date: string;
+  user_id: number; 
+  author_name: string; 
   content: string;
   category: CategoryType;
+  photo_data: string | null; 
+  created_at: string; 
 }
 
-export const posts: ForumPost[] = [
-  {
-    id: 1,
-    title: "1st",
-    author: "1",
-    date: "2025-04-01",
-    content:
-      "Well well well well well well well well well",
-    category: "General",
-  },
-  {
-    id: 2,
-    title: "2nd",
-    author: "Ugz",
-    date: "2025-04-02",
-    content: "what what what what what what what what what what what what what what what what",
-    category: "Announcement",
-  },
-  {
-    id: 3,
-    title: "3rd",
-    author: "Mountaint0psEAcret",
-    date: "2025-04-03",
-    content: "Do we wew we we we we we we we we we we we we we we we we have here!",
-    category: "Event",
-  },
-  {
-    id: 4,
-    title: "4th",
-    author: "Menitrust",
-    date: "2025-04-03",
-    content: "Rate my fit out of ten?",
-    category: "Fitcheck",
-  },
-];
+export interface ForumComment {
+    id: number;
+    forum_post_id: number;
+    user_id: number;
+    commenter_name: string; 
+    content: string;
+    created_at: string; 
+}

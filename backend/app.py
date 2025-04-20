@@ -2,13 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, make_respo
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
 from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike, ItemLike
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from google.auth.transport import requests
 from google.oauth2 import id_token
 import jwt
-from datetime import timedelta
 from functools import wraps
+import base64
 
 
 app = Flask(__name__)
@@ -24,7 +24,7 @@ CORS(app, supports_credentials=True, origins= "http://localhost:5173")
 
 mock_users = [
     {
-        "id": 0,
+        "id": 1,
         "name": "Billy Bob",
         "email": "bbob7@swarthmore.edu",
         "created_at": "2023-10-01 12:00:00",
@@ -32,7 +32,7 @@ mock_users = [
         "bio": "Hi, I'm Billy Bob! I love thrifting and finding unique pieces. I enjoy playing the guitar, cooking, and traveling.",
     },
      {
-        "id": 1,
+        "id": 2,
         "name": "John Doe",
         "email": "jdoe6@swarthmore.edu",
         "created_at": "2025-12-01 12:00:00",
@@ -51,8 +51,8 @@ mock_users = [
 
 mock_item_listings = [
     {
-        "id": 0,
-        "user_id": 0,
+        "id": 1,
+        "user_id": 1,
         "title": "Denim Jacket",
         "description": "A rugged denim jacket perfect for layering.",
         "price": 59.7,
@@ -64,8 +64,8 @@ mock_item_listings = [
         "size": "M",
     },
     {
-        "id": 1,
-        "user_id": 0,
+        "id": 2,
+        "user_id": 1,
         "title": "Nivarna T-Shirt",
         "description": "Classic t-shirt with a vintage Nivarna print.",
         "price": 24.87,
@@ -77,8 +77,8 @@ mock_item_listings = [
         "size": "L",
     },
     {
-        "id": 2,
-        "user_id": 0,
+        "id": 3,
+        "user_id": 1,
         "title": "Cargo Pants",
         "description": "Nice cargo pants with plenty of pockets.",
         "price": 39.5,
@@ -90,8 +90,8 @@ mock_item_listings = [
         "size": "S",
     },
     {
-        "id": 3,
-        "user_id": 0,
+        "id": 4,
+        "user_id": 1,
         "title": "Nike Airforce 1",
         "description": "Old pair of Nike Airforce 1 sneakers.",
         "price": 50.0,
@@ -103,8 +103,8 @@ mock_item_listings = [
         "size": "10",
     },
     {
-        "id": 4,
-        "user_id": 1,
+        "id": 5,
+        "user_id": 2,
         "title": "Basketball Hat",
         "description": "Lakers basketball hat.",
         "price": 14.0,
@@ -116,8 +116,8 @@ mock_item_listings = [
         "size": "",
     },
     {
-        "id": 5,
-        "user_id": 1,
+        "id": 6,
+        "user_id": 2,
         "title": "Leather Belt",
         "description": "Leather belt with a sonic design.",
         "price": 19.99,
@@ -130,7 +130,7 @@ mock_item_listings = [
     },
     {
         "id": 6,
-        "user_id": 2,
+        "user_id": 1,
         "title": "Tote Bag",
         "description": "Tote bag with an anime print.",
         "price": 15.99,
@@ -142,8 +142,8 @@ mock_item_listings = [
         "size": "",
     },
     {
-        "id": 7,
-        "user_id": 1,
+        "id": 8,
+        "user_id": 2,
         "title": "Baggy Jeans",
         "description": "Trendy baggy jeans for a casual look.",
         "price": 30.99,
@@ -158,16 +158,49 @@ mock_item_listings = [
 
 mock_item_likes = [
     {
-        "id": 0,
-        "user_id": 0,
-        "item_id": 7,
-    },
-    {
         "id": 1,
         "user_id": 1,
-        "item_id": 0,
+        "item_id": 8,
+    },
+    {
+        "id": 2,
+        "user_id": 2,
+        "item_id": 1,
     }
 ]
+
+mock_forum_posts = [
+    {
+        "id": 1,
+        "user_id": 1, # Billy Bob
+        "title": "Welcome to the Forum!",
+        "content": "Hey everyone, welcome to the new forum section. Feel free to post anything related to thrifting, fashion, or just say hi!",
+        "category": "Announcement", 
+        "created_at": "2025-04-19 10:00:00",
+        "photo_path": None 
+    },
+     {
+        "id": 2,
+        "user_id": 2, # John Doe
+        "title": "Looking for vintage band tees",
+        "content": "Anyone know good spots for finding vintage band t-shirts around campus or online?",
+        "category": "General",
+        "created_at": "2025-04-20 11:30:00",
+        "photo_path": None 
+    },
+     {
+        "id": 3,
+        "user_id": 1, # Billy Bob
+        "title": "Rate my recent haul!",
+        "content": "Found some amazing pieces at the local thrift store today. What do you think?",
+        "category": "Fitcheck",
+        "created_at": "2025-04-20 14:00:00",
+        "photo_path": "./mock_data_images/mock-item-1.jpg" 
+    },
+]
+
+
+
 
 def add_mock_data():
     # insert user mock data
@@ -190,6 +223,7 @@ def add_mock_data():
     # insert item listing mock data
     for item in mock_item_listings:
         image_path = item.get("imagePath")
+        picture_data = None
         if not image_path or not os.path.exists(image_path):
             print(f"Warning: Image file not found for item {item['id']} at {image_path}.")
             continue
@@ -216,15 +250,48 @@ def add_mock_data():
 
     # insert item like mock data
     for like in mock_item_likes:
-        item_like = ItemLike(
-            id=like["id"],
-            user_id=like["user_id"],
-            item_id=like["item_id"]
-        )
+        user_exists = db.session.query(User.id).filter_by(id=like["user_id"]).first() is not None
+        item_exists = db.session.query(ItemListing.id).filter_by(id=like["item_id"]).first() is not None
+        if user_exists and item_exists:
+            item_like = ItemLike(
+                id=like["id"],
+                user_id=like["user_id"],
+                item_id=like["item_id"]
+            )
         db.session.add(item_like)
     db.session.commit()
 
     print("Mock data successfully added to the database.")
+
+    for post_data in mock_forum_posts:
+        created_at = datetime.strptime(post_data["created_at"], "%Y-%m-%d %H:%M:%S")
+        photo_data = None
+        if post_data["photo_path"] and os.path.exists(post_data["photo_path"]):
+            with open(post_data["photo_path"], "rb") as f:
+                photo_data = f.read()
+        elif post_data["photo_path"]:
+            print(f"Warning: Photo file not found for forum post {post_data['id']} at {post_data['photo_path']}. Skipping photo for this post.")
+
+        user_exists = db.session.query(User.id).filter_by(id=post_data["user_id"]).first() is not None
+        if user_exists:
+            new_post = ForumPost(
+                id=post_data["id"],
+                user_id=post_data["user_id"],
+                title=post_data["title"],
+                content=post_data["content"],
+                category=post_data["category"],
+                photo_data=photo_data, 
+                created_at=created_at
+            )
+            db.session.add(new_post)
+        else:
+            print(f"Warning: Skipping mock forum post {post_data['id']} - User {post_data['user_id']} not found.")
+
+        db.session.commit()
+
+        print("Mock data successfully added to the database.")
+
+
 
 # Initialize db to be used with current Flask app
 with app.app_context():
@@ -275,6 +342,7 @@ def validate_authentication():
 @app.route('/store-items', methods=['GET'])
 @validate_authentication()
 def get_store_items(token_data):
+    #auth_user_id = token_data['user_id']
     # return all items in order of most recent
     items = ItemListing.query.order_by(ItemListing.created_at.desc()).all()
     items_list = [item.serialize() for item in items]
@@ -585,5 +653,76 @@ def update_user_bio(token_data, user_id):
     return make_response(jsonify({"message": "Bio updated successfully"}), 200)
 
 
+@app.route('/api/forum/posts', methods=['GET'])
+def get_forum_posts():
+    try:
+        posts = ForumPost.query.order_by(ForumPost.created_at.desc()).all()
+        posts_list = [post.serialize() for post in posts]
+        return jsonify(posts_list), 200
+    except Exception as e:
+        print(f"Error fetching forum posts: {e}")
+        return jsonify({"error": "An error occurred while fetching forum posts"}), 500
+
+
+@app.route('/api/forum/posts/<int:post_id>', methods=['GET'])
+def get_single_forum_post(post_id):
+    try:
+        post = ForumPost.query.get(post_id) 
+        if not post:
+            return jsonify({"error": "Forum post not found"}), 404
+
+        post_data = post.serialize()
+
+        # comments = ForumComment.query.filter_by(forum_post_id=post_id).order_by(ForumComment.created_at).all()
+        # post_data['comments'] = [comment.serialize() for comment in comments]
+
+        return jsonify(post_data), 200
+    except Exception as e:
+        print(f"Error fetching single forum post {post_id}: {e}")
+        return jsonify({"error": "An error occurred while fetching the forum post"}), 500
+
+
+@app.route('/api/forum/posts', methods=['POST'])
+@validate_authentication() 
+def create_forum_post(token_data):
+    user_id = token_data['user_id']
+
+    title = request.form.get('title')
+    content = request.form.get('content')
+    category = request.form.get('category')
+    photo_file = request.files.get('photo')
+
+    if not title or not content or not category:
+        return jsonify({"error": "Title, content, and category are required"}), 400
+
+    allowed_categories = ["General", "Announcement", "Event", "Fitcheck"] 
+    if category not in allowed_categories:
+         return jsonify({"error": f"Invalid category: {category}"}), 400
+
+    photo_data = None
+    if photo_file:
+        photo_data = photo_file.read()
+
+
+    try:
+        new_post = ForumPost(
+            title=title,
+            content=content,
+            user_id=user_id,
+            category=category, 
+            photo_data=photo_data 
+        )
+
+        db.session.add(new_post)
+        db.session.commit()
+
+        return jsonify(new_post.serialize()), 201
+
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error creating forum post: {e}") 
+        return jsonify({"error": "An error occurred while creating the forum post"}), 500
+
 if __name__ == '__main__':
     app.run(host="localhost", port="5001", debug=True)
+#5173
