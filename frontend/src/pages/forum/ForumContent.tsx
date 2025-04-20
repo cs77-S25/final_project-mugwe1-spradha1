@@ -15,7 +15,13 @@ export default function ForumContent() {
       setLoading(true);
       setError(null);
   
-      const response = await fetch('/api/forum/posts');
+      const response = await fetch('/api/forum/posts', {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error fetching posts' }));
         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
