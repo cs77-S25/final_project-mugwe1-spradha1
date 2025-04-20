@@ -40,7 +40,7 @@ mock_users = [
         "bio": "Yo I'm John. Who are you?",
     },
      {
-        "id": 2,
+        "id": 3,
         "name": "Summit Pradhan",
         "email": "spradha1@swarthmore.edu",
         "created_at": "2025-12-01 12:00:00",
@@ -129,7 +129,7 @@ mock_item_listings = [
         "size": "",
     },
     {
-        "id": 6,
+        "id": 7,
         "user_id": 1,
         "title": "Tote Bag",
         "description": "Tote bag with an anime print.",
@@ -294,20 +294,24 @@ def add_mock_data():
 
 
 # Initialize db to be used with current Flask app
-with app.app_context():
-    db.init_app(app)
+#initialize using function
+def init_database():
+    with app.app_context():
+        db.init_app(app)
 
-    # Drop any existing tables for a clean start
-    db.drop_all() 
+        # Drop any existing tables for a clean start
+        db.drop_all() 
 
-    # Create the database if it doesn't exist
-    # Note: create_all does NOT update tables if they are already in the database. 
-    # If you change a model’s columns, use a migration library like Alembic with Flask-Alembic 
-    # or Flask-Migrate to generate migrations that update the database schema.
-    db.create_all()
+        # Create the database if it doesn't exist
+        # Note: create_all does NOT update tables if they are already in the database. 
+        # If you change a model’s columns, use a migration library like Alembic with Flask-Alembic 
+        # or Flask-Migrate to generate migrations that update the database schema.
+        db.create_all()
 
-    # add mock data to the database
-    add_mock_data()
+        # add mock data to the database
+        add_mock_data()
+
+
 
 # Auth helper function to verify and decode JWT tokens
 def decode_access_token(token):
@@ -339,7 +343,7 @@ def validate_authentication():
     return decorator
 
 ## STORE ITEMS 
-@app.route('/store-items', methods=['GET'])
+@app.route('/api/store-items', methods=['GET'])
 @validate_authentication()
 def get_store_items(token_data):
     #auth_user_id = token_data['user_id']
@@ -354,7 +358,7 @@ def get_store_items(token_data):
     # NOTE: should probably paginate this in the future, oh well
     return make_response(jsonify(items_list), 200)
 
-@app.route('/store-items/<int:item_id>', methods=['GET'])
+@app.route('/api/store-items/<int:item_id>', methods=['GET'])
 @validate_authentication()
 def get_store_item(token_data, item_id): 
     # also fetch User data (name, email)
@@ -377,7 +381,7 @@ def get_store_item(token_data, item_id):
     return make_response(jsonify(response), 200)
 
 # USER
-@app.route('/user/<int:user_id>', methods=['GET'])
+@app.route('/api/user/<int:user_id>', methods=['GET'])
 @validate_authentication()
 def get_user(token_data, user_id):
     token = request.cookies.get('access_token')
@@ -397,7 +401,7 @@ def get_user(token_data, user_id):
     return make_response(jsonify(user.serialize()), 200)
 
 ## STORE ITEMS BY USER (for profile page)
-@app.route('/user/<int:user_id>/store-items', methods=['GET'])
+@app.route('/api/user/<int:user_id>/store-items', methods=['GET'])
 @validate_authentication()
 def get_user_items(token_data, user_id):
     auth_user_id = token_data['user_id']
@@ -414,7 +418,7 @@ def get_user_items(token_data, user_id):
     return make_response(jsonify(items_list), 200)
 
 # UPLOAD STORE ITEM
-@app.route('/store-items', methods=['POST'])
+@app.route('/api/store-items', methods=['POST'])
 @validate_authentication()
 def upload_store_item(token_data):
     # verify that the id from the token matches the user_id in the request
@@ -469,7 +473,7 @@ def upload_store_item(token_data):
     temp_response = {"message": "Item successfully uploaded!"}
     return make_response(jsonify(temp_response), 201)
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     try:
         print("Login request received")
@@ -540,7 +544,7 @@ def login():
         print(error)
         return make_response(jsonify({"error": str(error)}), 400)
 
-@app.route('/logout', methods=['POST', 'OPTIONS'])
+@app.route('/api/logout', methods=['POST', 'OPTIONS'])
 def logout():
     #deletes token cookie from user 
     resp = make_response()
@@ -549,7 +553,7 @@ def logout():
     return resp
 
 # Get the current user's information (aka "me")
-@app.route('/me', methods=['GET', 'OPTIONS'])
+@app.route('/api/me', methods=['GET', 'OPTIONS'])
 def me():
     # validate that the JWT exists and is valid
     token = request.cookies.get('access_token')
@@ -569,7 +573,7 @@ def me():
     # return user info
     return jsonify({"user_data": user.serialize()}), 200
 
-@app.route('/store-items/<int:item_id>/like', methods=['POST'])
+@app.route('/api/store-items/<int:item_id>/like', methods=['POST'])
 @validate_authentication()
 def like_store_item(token_data, item_id):
     user_id = token_data['user_id']
@@ -593,7 +597,7 @@ def like_store_item(token_data, item_id):
 
     return make_response(jsonify({"message": "Item liked successfully"}), 200)
 
-@app.route('/user/<int:user_id>/liked-items', methods=['GET'])
+@app.route('/api/user/<int:user_id>/liked-items', methods=['GET'])
 @validate_authentication()
 def get_user_likes(token_data, user_id):
     auth_user_id = token_data['user_id']
@@ -610,7 +614,7 @@ def get_user_likes(token_data, user_id):
             liked_items_list.append(liked_item)
     return make_response(jsonify(liked_items_list), 200)
 
-@app.route('/store-items/<int:item_id>', methods=['DELETE'])
+@app.route('/api/store-items/<int:item_id>', methods=['DELETE'])
 @validate_authentication()
 def delete_store_item(token_data, item_id):
     auth_user_id = token_data['user_id']
@@ -629,7 +633,7 @@ def delete_store_item(token_data, item_id):
 
     return make_response(jsonify({"message": "Item deleted successfully"}), 200)
 
-@app.route('/user/<int:user_id>/bio', methods=['PUT'])
+@app.route('/api/user/<int:user_id>/bio', methods=['PUT'])
 @validate_authentication()
 def update_user_bio(token_data, user_id):
     auth_user_id = token_data['user_id']
@@ -724,5 +728,7 @@ def create_forum_post(token_data):
         return jsonify({"error": "An error occurred while creating the forum post"}), 500
 
 if __name__ == '__main__':
+    if os.getenv('FLASK_ENV') == 'development':
+        init_database()
     app.run(host="localhost", port="5001", debug=True)
 #5173
