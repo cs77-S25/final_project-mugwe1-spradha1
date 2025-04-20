@@ -5,8 +5,11 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
+import { useAuth } from "@/context/UserContext";
+import { Loader2 } from "lucide-react";
 
 export default function Item() {
+	// Setting up state variables
 	const [storeItem, setStoreItem] = React.useState<StoreItemWithUser | null>(
 		null
 	);
@@ -14,12 +17,20 @@ export default function Item() {
 	const [heart, setHeart] = React.useState(false);
 	const [heartLoading, setHeartLoading] = React.useState(false);
 	const [likeCount, setLikeCount] = React.useState(0);
+	const [isOwner, setIsOwner] = React.useState(false);
+	const [deleteLoading, setDeleteLoading] = React.useState(false);
+
+	// Getting auth context
+	const userAuth = useAuth();
+	const authUserId = userAuth.user?.id;
 
 	const params = useParams();
 	if (!params.itemId) {
 		return <div>Invalid Route</div>;
 	}
 	const itemId = parseInt(params.itemId);
+
+	// Fetching item data
 	useEffect(() => {
 		window.scrollTo(0, 0);
 
@@ -48,6 +59,14 @@ export default function Item() {
 		}
 	}, [storeItem]);
 
+	// Check if the user is the owner of the item
+	useEffect(() => {
+		if (storeItem && authUserId) {
+			setIsOwner(storeItem.user_id === authUserId);
+		}
+	}, [storeItem, authUserId]);
+
+	// Click handlers
 	const handleHeartClick = async () => {
 		if (heartLoading) return;
 		setHeartLoading(true);
@@ -63,6 +82,22 @@ export default function Item() {
 			console.error(err);
 		} finally {
 			setHeartLoading(false);
+		}
+	};
+
+	const handleDeleteItem = async (itemId: number) => {
+		try {
+			setDeleteLoading(true);
+			const res = await fetch(`/api/store-items/${itemId}`, {
+				method: "DELETE",
+				headers: { "Content-Type": "application/json" },
+			});
+			if (!res.ok) throw new Error(res.statusText);
+			window.location.href = "/store";
+		} catch (error) {
+			console.error("Error deleting item:", error);
+		} finally {
+			setDeleteLoading(false);
 		}
 	};
 
@@ -147,13 +182,26 @@ export default function Item() {
 							<span className="text-gray-700">{storeItem.color}</span>
 						</div>
 						<div className="mt-auto">
-							<Button
-								size="lg"
-								variant="secondary"
-								className="w-full mb-4 bg-blue-500 text-white hover:bg-blue-600"
-							>
-								Contact Seller
-							</Button>
+							{isOwner ? (
+								<Button
+									size="lg"
+									variant="destructive"
+									className="w-full mb-4 bg-red-500 text-white hover:bg-red-600"
+									onClick={() => handleDeleteItem(storeItem.id)}
+									disabled={deleteLoading}
+								>
+									{deleteLoading && <Loader2 className="animate-spin" />}
+									{deleteLoading ? "Deleting..." : "Delete Item"}
+								</Button>
+							) : (
+								<Button
+									size="lg"
+									variant="secondary"
+									className="w-full mb-4 bg-blue-500 text-white hover:bg-blue-600"
+								>
+									Contact Seller
+								</Button>
+							)}
 						</div>
 					</div>
 				</div>

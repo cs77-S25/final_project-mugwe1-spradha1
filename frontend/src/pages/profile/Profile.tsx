@@ -6,20 +6,39 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StoreItemCard } from "@/pages/store/storeItemCard";
 import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/context/UserContext";
+import {
+	Dialog,
+	DialogTrigger,
+	DialogContent,
+	DialogHeader,
+	DialogFooter,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Profile() {
 	const params = useParams();
-	// Will be used later to fetch user data
 	if (!params.userId) {
 		return <div>User not found</div>;
 	}
+
+	// States
 	const [profileUser, setProfileUser] = useState<User | null>(null);
 	const [profileStoreItems, setProfileStoreItems] = useState<StoreItem[]>([]);
 	const [profileLikedItems, setProfileLikedItems] = useState<StoreItem[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [isOwner, setIsOwner] = useState(false);
+	const [isDialogOpen, setIsDialogOpen] = useState(false);
+	const [newBio, setNewBio] = useState("");
 	const userId = parseInt(params.userId);
 
+	const userAuth = useAuth();
+
 	useEffect(() => {
+		// Scroll to top on page load, workaround for react-router-dom
 		window.scrollTo(0, 0);
 
 		const fetchProfileUser = async () => {
@@ -28,7 +47,7 @@ export default function Profile() {
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}
-				const data = await response.json();
+				const data: User = await response.json();
 				setProfileUser(data);
 			} catch (error) {
 				console.error("Error fetching user:", error);
@@ -55,7 +74,6 @@ export default function Profile() {
 					throw new Error(response.statusText);
 				}
 				const data = await response.json();
-				console.log(data);
 				setProfileLikedItems(data);
 			} catch (error) {
 				console.error("Error fetching user:", error);
@@ -68,6 +86,36 @@ export default function Profile() {
 		fetchProfileLikedItems();
 		setLoading(false);
 	}, [userId]);
+
+	// When profileUser loads, initialize bio state
+	useEffect(() => {
+		if (profileUser) {
+			setNewBio(profileUser.bio || "");
+		}
+	}, [profileUser]);
+
+	// Check if the logged-in user is the owner of the profile
+	useEffect(() => {
+		if (userAuth.user && userAuth.user.id === userId) {
+			setIsOwner(true);
+		}
+	}, [userAuth, userId]);
+
+	const handleSaveBio = async () => {
+		try {
+			const response = await fetch(`/api/user/${userId}/bio`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ bio: newBio }),
+			});
+			if (!response.ok) throw new Error(response.statusText);
+			// update local state
+			setProfileUser((prev) => (prev ? { ...prev, bio: newBio } : prev));
+			setIsDialogOpen(false);
+		} catch (error) {
+			console.error("Failed to update bio:", error);
+		}
+	};
 
 	if (loading) {
 		return (
@@ -98,14 +146,48 @@ export default function Profile() {
 						/>
 						<AvatarFallback>{getInitials(profileUser.name)}</AvatarFallback>
 					</Avatar>
-					<div>
-						<div className="text-lg font-bold ml-4">{profileUser.name}</div>
+					<div className="ml-4 flex items-center space-x-2">
+						<div className="text-lg font-bold">{profileUser.name}</div>
+						{/* If the user is the owner, show the edit button */}
+						{isOwner && (
+							<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+								<DialogTrigger asChild>
+									<Button
+										size="sm"
+										variant={"secondary"}
+										className="border-2 border-gray-500"
+									>
+										Edit Profile
+									</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Edit Profile</DialogTitle>
+										<DialogDescription>
+											Edit your profile bio below.
+										</DialogDescription>
+									</DialogHeader>
+									<Textarea
+										value={newBio}
+										onChange={(e) => setNewBio(e.target.value)}
+										rows={4}
+										className="w-full"
+									/>
+									<DialogFooter>
+										<Button onClick={handleSaveBio}>Save</Button>
+									</DialogFooter>
+								</DialogContent>
+							</Dialog>
+						)}
 					</div>
 				</div>
+
+				{/*User bio */}
 				<div className="text-2xl font-bold mb-4">Bio</div>
 				<div className="text-base mb-4 w-1/3">
 					{profileUser.bio.length > 0 ? profileUser.bio : "No bio written yet"}
 				</div>
+
 				<div className="text-2xl font-bold mb-4">Stats</div>
 				<div className="grid grid-cols-4 gap-4 w-full mt-4">
 					<div className="flex flex-col items-center">
@@ -125,7 +207,8 @@ export default function Profile() {
 						<p className="text-lg text-muted-foreground">Forum Posts</p>
 					</div>
 				</div>
-				{/* Tabbed Interface */}
+
+				{/* Tabbed Interface*/}
 				<Tabs defaultValue="selling" className="mt-8">
 					<TabsList>
 						<TabsTrigger value="selling">Selling</TabsTrigger>

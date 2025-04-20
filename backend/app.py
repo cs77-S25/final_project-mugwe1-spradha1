@@ -39,6 +39,14 @@ mock_users = [
         "profile_picture_url": "https://thumbs.dreamstime.com/b/cool-kid-10482439.jpg",
         "bio": "Yo I'm John. Who are you?",
     },
+     {
+        "id": 2,
+        "name": "Summit Pradhan",
+        "email": "spradha1@swarthmore.edu",
+        "created_at": "2025-12-01 12:00:00",
+        "profile_picture_url": "https://thumbs.dreamstime.com/b/mountain-icon-simple-style-white-background-79538820.jpg",
+        "bio": "This is Summit. How does this website work???",
+    },
 ]
 
 mock_item_listings = [
@@ -122,7 +130,7 @@ mock_item_listings = [
     },
     {
         "id": 6,
-        "user_id": 1,
+        "user_id": 2,
         "title": "Tote Bag",
         "description": "Tote bag with an anime print.",
         "price": 15.99,
@@ -324,11 +332,17 @@ def get_user(token_data, user_id):
 @app.route('/user/<int:user_id>/store-items', methods=['GET'])
 @validate_authentication()
 def get_user_items(token_data, user_id):
+    auth_user_id = token_data['user_id']
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return make_response(jsonify({"error": "User not found"}), 404)
     items = ItemListing.query.filter_by(user_id=user_id).all()
     items_list = [item.serialize() for item in items]
+
+    # also fetch whether the auth has liked the item and total like count
+    for item in items_list:
+        item["liked"] = ItemLike.query.filter_by(item_id=item["id"], user_id=auth_user_id).first() is not None
+        item["like_count"] = ItemLike.query.filter_by(item_id=item["id"]).count()
     return make_response(jsonify(items_list), 200)
 
 # UPLOAD STORE ITEM
@@ -527,6 +541,48 @@ def get_user_likes(token_data, user_id):
             liked_item["like_count"] = ItemLike.query.filter_by(item_id=item.id).count()
             liked_items_list.append(liked_item)
     return make_response(jsonify(liked_items_list), 200)
+
+@app.route('/store-items/<int:item_id>', methods=['DELETE'])
+@validate_authentication()
+def delete_store_item(token_data, item_id):
+    auth_user_id = token_data['user_id']
+    # Check if the item exists
+    item = ItemListing.query.filter_by(id=item_id).first()
+    if not item:
+        return make_response(jsonify({"error": "Item not found"}), 404)
+
+    # Check if the authenticated user is the owner of the item
+    if item.user_id != auth_user_id:
+        return make_response(jsonify({"error": "You do not have permission to delete this item"}), 403)
+
+    # Delete the item
+    db.session.delete(item)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Item deleted successfully"}), 200)
+
+@app.route('/user/<int:user_id>/bio', methods=['PUT'])
+@validate_authentication()
+def update_user_bio(token_data, user_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the owner of the profile
+    if auth_user_id != user_id:
+        return make_response(jsonify({"error": "You do not have permission to update this bio"}), 403)
+
+    # Get the new bio from the request
+    new_bio = request.json.get('bio')
+    if new_bio is None:
+        return make_response(jsonify({"error": "Bio is required"}), 400)
+
+    # Update the user's bio in the database
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return make_response(jsonify({"error": "User not found"}), 404)
+
+    user.bio = new_bio
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Bio updated successfully"}), 200)
 
 
 if __name__ == '__main__':
