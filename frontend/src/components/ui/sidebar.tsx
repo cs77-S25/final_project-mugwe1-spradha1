@@ -26,7 +26,7 @@ export default function Sidebar({
             <div className="p-4 overflow-y-auto overflow-x-hidden h-full">
                 {Children.map(children, (child) => {
                     if (isValidElement(child)) {
-                        return cloneElement(child as React.ReactElement<any>, { isCollapsed });
+                        return cloneElement(child as React.ReactElement<any>, { collapsed:isCollapsed, setIsCollapsed });
                     }
                     return child;
                 })}

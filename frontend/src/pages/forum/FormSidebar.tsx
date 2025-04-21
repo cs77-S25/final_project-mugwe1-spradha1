@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Search, Funnel, ChevronDown, ChevronUp } from "lucide-react";
 import { CategoryType } from "./ForumConstants";
 
@@ -7,6 +7,8 @@ interface FormSidebarProps {
   onCategoryChange: (cats: CategoryType[]) => void;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  collapsed: boolean;
+  setCollapsed: (value: boolean) => void;
 }
 
 const CATEGORIES: CategoryType[] = [
@@ -21,16 +23,24 @@ export default function FormSidebar({
   onCategoryChange,
   searchTerm,
   onSearchChange,
+  collapsed,
+  setCollapsed,
 }: FormSidebarProps) {
   const [showFilters, setShowFilters] = useState(true);
-  const [collapsed, setCollapsed] = useState(false);  
+  
+  useEffect(() => {
+      setShowFilters(!collapsed);
+  }, [collapsed]);
 
   const navItemClasses =
-    "flex items-center p-3 rounded-lg text-white hover:text-[#DB572C] hover:bg-white hover:font-bold transition-all duration-400 w-full";
+    "flex items-center p-4 rounded-lg text-white hover:text-[#DB572C] hover:bg-white hover:font-bold transition-all duration-600 w-full";
   const layoutClasses = "gap-4";
 
   return (
-    <nav>
+    <nav className={`transition-all duration-600 ease-in-out ${
+        collapsed ? "w-14" : "w-58"
+      }`}
+    >
       <ul className="space-y-2">
         {/** search **/}
         <li>
@@ -44,7 +54,7 @@ export default function FormSidebar({
               placeholder="Search posts..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="ml-3 bg-transparent flex-1 focus:outline-none placeholder-gray-200"
+              className="ml-3 bg-transparent flex-1 focus:outline-none placeholder-gray-400"
             />
             )}
           </div>
@@ -56,14 +66,13 @@ export default function FormSidebar({
               e.stopPropagation();
               setShowFilters((v) => !v);
             }}
-            className={`${navItemClasses} ${layoutClasses} justify-between cursor-pointer`}
+            className={`${navItemClasses} ${layoutClasses} justify-between cursor-pointer `}
             title="Filters"
-            aria-expanded={showFilters}
-          >
-            <div className={`flex items-center ${layoutClasses}`}>
+            aria-expanded={showFilters}>
+            <div className={`flex items-center  ${layoutClasses}`}>
               <Funnel size={24} className="min-w-[24px]" />
               {!collapsed && (                          
-                <span className="truncate font-medium">Filters</span>
+                <span className="truncate font-medium pl-3">Filters</span>
               )}
             </div>
             {showFilters ? (
@@ -76,16 +85,15 @@ export default function FormSidebar({
           {showFilters && !collapsed &&(
             <div
               id="filter-options"
-              className="pl-12 pr-6 pb-2 space-y-5 text-white"
-            >
+              className="pl-16 pr-6 pb-2 space-y-5 text-white ">
               <div>
-                <h4 className="mb-2 text-sm font-semibold text-gray-200 uppercase tracking-wider">
+                <h4 className="mb-3 text-sm font-semibold text-gray-300 uppercase tracking-wider">
                   Category
                 </h4>
-                <ul className="space-y-1">
+                <ul className="space-y-3">
                   {CATEGORIES.map((cat) => (
                     <li key={cat}>
-                      <label className="flex items-center gap-2 cursor-pointer text-sm text-white hover:text-gray-300 transition-colors duration-150">
+                      <label className="flex items-center gap-2 cursor-pointer text-base text-white hover:text-gray-300 transition-colors duration-150">
                         <input
                           type="checkbox"
                           className="rounded border-[#DB572C] text-[#DB572C] focus:ring-2 focus:ring-[#DB572C] focus:ring-offset-0"

@@ -58,12 +58,12 @@ export default function ForumContent() {
       {/* Sidebar area */}
       <Sidebar>
         <FormSidebar
-          isCollapsed={isCollapsed}
-          toggleCollapse={() => setIsCollapsed((v) => !v)}
           selectedCategories={selectedCategories}
           onCategoryChange={setSelectedCategories}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          collapsed={isCollapsed}
+          setCollapsed={setIsCollapsed}
         />
       </Sidebar>
       <div className="flex-1 bg-white h-full p-6 overflow-y-auto">
