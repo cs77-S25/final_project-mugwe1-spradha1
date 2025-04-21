@@ -40,7 +40,7 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
     try {
       const response = await fetch('/api/forum/posts', {
         method: 'POST',
-
+        credentials: 'include',
         body: formData, 
       });
 
