@@ -677,8 +677,11 @@ def get_single_forum_post(post_id):
 
         post_data = post.serialize()
 
-        # comments = ForumComment.query.filter_by(forum_post_id=post_id).order_by(ForumComment.created_at).all()
-        # post_data['comments'] = [comment.serialize() for comment in comments]
+        comments = ForumComment.query\
+        .filter_by(forum_post_id=post_id)\
+        .order_by(ForumComment.created_at.desc())\
+        .all()
+        post_data["comments"] = [c.serialize() for c in comments]
 
         return jsonify(post_data), 200
     except Exception as e:
@@ -690,7 +693,6 @@ def get_single_forum_post(post_id):
 @validate_authentication() 
 def create_forum_post(token_data):
     user_id = token_data['user_id']
-
     title = request.form.get('title')
     content = request.form.get('content')
     category = request.form.get('category')
@@ -706,6 +708,8 @@ def create_forum_post(token_data):
     photo_data = None
     if photo_file:
         photo_data = photo_file.read()
+    else:
+        photo_data  = None
 
 
     try:
@@ -726,9 +730,29 @@ def create_forum_post(token_data):
         db.session.rollback()
         print(f"Error creating forum post: {e}") 
         return jsonify({"error": "An error occurred while creating the forum post"}), 500
+    
+@app.route('/api/forum/posts/<int:post_id>/comments', methods=['POST'])
+@validate_authentication()
+def create_comment(token_data, post_id):
+    user_id = token_data['user_id']
+    data = request.get_json() or {}
+    content = data.get('content')
+    if not content:
+        return jsonify({"error": "Content is required"}), 400
+
+    new_comment = ForumComment(
+        forum_post_id=post_id,
+        user_id=user_id,
+        content=content
+    )
+    db.session.add(new_comment)
+    db.session.commit()
+    return jsonify(new_comment.serialize()), 201
+
 
 if __name__ == '__main__':
-    if os.getenv('FLASK_ENV') == 'development':
+    # if os.getenv('FLASK_ENV') == 'development':
+    #     init_database()
+    if not os.path.exists('database.db'):
         init_database()
     app.run(host="localhost", port="5001", debug=True)
-#5173
