@@ -4,7 +4,7 @@ import FormSidebar from "./FormSidebar";
 import { Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import {CategoryType,categoryColors,defaultColors,ForumPost,} from "./ForumConstants";
-import NewForumPostForm from "./NewForumPostForm";
+import NewPostForm from "./NewForumPostForm";
 
 export default function ForumContent() {
   const [posts, setPosts] = useState<ForumPost[]>([]);
@@ -49,7 +49,8 @@ export default function ForumContent() {
     const okSearch =
       term === "" ||
       p.title.toLowerCase().includes(term) ||
-      p.content.toLowerCase().includes(term);
+      p.content.toLowerCase().includes(term) ||
+      p.author_name.toLowerCase().includes(term);
     return okCat && okSearch;
   });
 
@@ -79,7 +80,7 @@ export default function ForumContent() {
         </div>
 
         {showNewPostForm && (
-          <NewForumPostForm
+          <NewPostForm
             onPostCreated={() => {
               setShowNewPostForm(false);
               fetchPosts();

@@ -1,17 +1,29 @@
 import React, { useState, Children, cloneElement, isValidElement } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
+import { on } from "events";
 interface SidebarProps {
     children: React.ReactNode;
     className?: string;
     initialCollapsed?: boolean;
+    isCollapsed?: boolean;
+    onCollapseChange?: (collapsed: boolean) => void;
 }
 
 export default function Sidebar({
     children,
     className,
-    initialCollapsed = false
+    initialCollapsed = false,
+    isCollapsed: controlledCollapsed,
+    onCollapseChange
+
 }: SidebarProps) {
-    const [isCollapsed, setIsCollapsed] = useState(initialCollapsed);
+    const [internalCollapsed, setInternalCollapsed] = useState(initialCollapsed);
+
+    const isCollapsed = controlledCollapsed ?? internalCollapsed;
+    const setIsCollapsed = (value: boolean) => {
+        setInternalCollapsed(value);
+        onCollapseChange?.(value);
+    };
 
     return (
         <div className={`relative h-[calc(100vh-8rem)] mt-8 ml-4 bg-[#A11833] hover:bg-[#3F030F] transition-all duration-600 ease-in-out rounded-lg ${
@@ -26,7 +38,7 @@ export default function Sidebar({
             <div className="p-4 overflow-y-auto overflow-x-hidden h-full">
                 {Children.map(children, (child) => {
                     if (isValidElement(child)) {
-                        return cloneElement(child as React.ReactElement<any>, { collapsed:isCollapsed, setIsCollapsed });
+                        return cloneElement(child as React.ReactElement<any>, { collapsed:isCollapsed, setCollapsed:setIsCollapsed });
                     }
                     return child;
                 })}

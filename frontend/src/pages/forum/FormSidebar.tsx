@@ -28,9 +28,16 @@ export default function FormSidebar({
 }: FormSidebarProps) {
   const [showFilters, setShowFilters] = useState(true);
   
+  
   useEffect(() => {
       setShowFilters(!collapsed);
   }, [collapsed]);
+
+  const handleExpandClick = () => {
+    if (collapsed) {
+        setCollapsed(false);
+    }
+  };
 
   const navItemClasses =
     "flex items-center p-4 rounded-lg text-white hover:text-[#DB572C] hover:bg-white hover:font-bold transition-all duration-600 w-full";
@@ -45,17 +52,18 @@ export default function FormSidebar({
         {/** search **/}
         <li>
           <div
+            onClick={handleExpandClick}
             className={`${navItemClasses} ${layoutClasses} bg-[#A11833] cursor-text`}
-            title="Search posts">
-            <Search size={24} className="min-w-[24px]" />
+            title={collapsed ? "Click to expand and search" : "Search posts"}>
+            <Search size={24} className="min-w-[24px]"/>
             {!collapsed && (
               <input
               type="text"
               placeholder="Search posts..."
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="ml-3 bg-transparent flex-1 focus:outline-none placeholder-gray-400"
-            />
+              onClick={(e) => e.stopPropagation()}
+              className="ml-3 bg-transparent flex-1 focus:outline-none placeholder-gray-400"/>
             )}
           </div>
         </li>
@@ -64,10 +72,14 @@ export default function FormSidebar({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              setShowFilters((v) => !v);
+              if (collapsed) {
+                setCollapsed(false)
+              } else {
+                setShowFilters((v) => !v);
+              }
             }}
             className={`${navItemClasses} ${layoutClasses} justify-between cursor-pointer `}
-            title="Filters"
+            title={collapsed ? "Click to expand filters" : "Filters"}
             aria-expanded={showFilters}>
             <div className={`flex items-center  ${layoutClasses}`}>
               <Funnel size={24} className="min-w-[24px]" />
@@ -75,7 +87,7 @@ export default function FormSidebar({
                 <span className="truncate font-medium pl-3">Filters</span>
               )}
             </div>
-            {showFilters ? (
+            {!collapsed && showFilters ? (
               <ChevronUp size={18} />
             ) : (
               <ChevronDown size={18} />
@@ -88,7 +100,7 @@ export default function FormSidebar({
               className="pl-16 pr-6 pb-2 space-y-5 text-white ">
               <div>
                 <h4 className="mb-3 text-sm font-semibold text-gray-300 uppercase tracking-wider">
-                  Category
+                 Categories
                 </h4>
                 <ul className="space-y-3">
                   {CATEGORIES.map((cat) => (

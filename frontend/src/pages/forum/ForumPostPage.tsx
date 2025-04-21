@@ -3,12 +3,6 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { CategoryType, categoryColors, defaultColors, ForumPost, ForumComment } from "./ForumConstants";
 
-const ducomments: ForumComment[] = [
-  { id: 1, forum_post_id: 1, user_id: 101, commenter_name: "Ug", created_at: "2024-07-21T10:00:00Z", content: "nice" },
-  { id: 2, forum_post_id: 1, user_id: 102, commenter_name: "Ugw", created_at: "2024-07-21T10:05:00Z", content: "nicex2" },
-  { id: 3, forum_post_id: 1, user_id: 103, commenter_name: "Ugwe", created_at: "2024-07-21T10:10:00Z", content: "nice10x" },
-];
-
 
 export default function ForumPostPage() {
   const { postId } = useParams<{ postId: string }>();
@@ -16,10 +10,24 @@ export default function ForumPostPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [comments, setComments] = useState<ForumComment[]>(ducomments.filter(c => c.forum_post_id === Number(postId))); // Filter mock comments by post ID
+  const[comments, setComments] = useState<ForumComment[]>([]);
   const [newCommentContent, setNewCommentContent] = useState("");
+  const[currentUser, setCurrentUser] = useState<{id: number, name: string } | null>(null);
+
 
   useEffect(() => {
+
+    fetch("/api/me", { credentials : "include" })
+    .then((r) => r.json())
+    .then((data) => {
+      if (data.user_data) {
+        setCurrentUser({id: data.user_data.id, name: data.user_data.name});
+      }
+    })
+    .catch(() => {
+      ////
+    });
+
     const fetchPost = async () => {
        if (!postId) {
            setError("No post ID provided.");
@@ -41,6 +49,7 @@ export default function ForumPostPage() {
         }
         const data: ForumPost = await response.json();
         setPost(data);
+        setComments(data.comments || []);
 
     /////////
 
@@ -58,19 +67,25 @@ export default function ForumPostPage() {
 
   }, [postId]);
 
-  const handleAddComment = () => {
-    if (newCommentContent.trim() === "" || !post) return;
+  const handleAddComment = async () => {
+    if (!newCommentContent.trim() || !post) return;
 
-    const comment: ForumComment = { 
-      id: comments.length > 0 ? comments[0].id + 1 : 1,
-      forum_post_id: post.id,
-      user_id: 999, 
-      commenter_name: "Current User", 
-      created_at: new Date().toISOString(),
-      content: newCommentContent,
-    };
-    setComments([comment, ...comments]);
-    setNewCommentContent(""); 
+    const res = await fetch(`/api/forum/posts/${post.id}/comments`, {
+      method:  "POST",
+      credentials: "include", 
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content : newCommentContent }),
+    });
+    if (!res.ok) {
+      console.error("Counld not save comment");
+      return;
+    }
+    const saved: ForumComment = await res.json(); 
+
+    setComments((prev) => [saved, ...prev]);
+    setNewCommentContent("");
   };
 
 

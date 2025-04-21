@@ -21,6 +21,7 @@ export interface ForumPost {
   category: CategoryType;
   photo_data: string | null; 
   created_at: string; 
+  comments?: ForumComment[];
 }
 
 export interface ForumComment {

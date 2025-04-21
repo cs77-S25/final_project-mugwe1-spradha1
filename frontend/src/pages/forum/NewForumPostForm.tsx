@@ -59,9 +59,15 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
     }
   };
 
+  const handleOutsideClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+        onCancel();
+    }
+  }
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+    <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex items-center justify-center z-50" onClick={handleOutsideClick}>
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md " >
         <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>
