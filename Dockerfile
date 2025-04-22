@@ -1,14 +1,19 @@
-FROM python:3.8-slim-buster
+FROM node:lts-bullseye
+ENV NODE_ENV=production
+# ARG DATABASE_URL
+# ENV DATABASE_URL=postgresql://postgres:example@ascribe-db:5432/ascribe_db
 
-WORKDIR /python-docker
+RUN apt-get update
+RUN apt-get install -y vim netcat-openbsd
 
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
-
+WORKDIR /usr/src/app
 COPY . .
+EXPOSE 3000
 
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=5000"]
-
-
-#docker build --tag my-cool-project .
-
+RUN chown -R node /usr/src/app
+USER node
+RUN npm install
+# RUN npx prisma generate
+# RUN DATABASE_URL=$DATABASE_URL npm run build
+RUN npm run build
+CMD ["npm", "start"]

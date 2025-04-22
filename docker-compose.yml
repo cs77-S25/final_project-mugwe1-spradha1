@@ -20,6 +20,27 @@ services:
       - internal
       - traefik
 
+  swycle-backend:
+    image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:latest
+    build:
+      context: .
+      dockerfile: ./Dockerfile-Backend
+    #environment:
+    env_file:
+      - .env
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=traefik"
+        - "traefik.http.routers.swycle.entrypoints=https"
+        - "traefik.http.routers.swycle.rule=Host(`swycle.sccs.swarthmore.edu`)"
+        - "traefik.http.routers.swycle.tls=true"
+        - "traefik.http.routers.swycle.tls.certresolver=letsEncrypt"
+        - "traefik.http.services.swycle.loadbalancer.server.port=5000"
+    networks:
+      - internal
+      - traefik
+
 networks:
   internal:
 
