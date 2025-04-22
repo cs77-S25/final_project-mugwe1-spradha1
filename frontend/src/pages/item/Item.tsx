@@ -18,6 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { ArrowLeft } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/utils";
 
 export default function Item() {
 	// Setting up state variables
@@ -53,6 +56,7 @@ export default function Item() {
 
 		const fetchItem = async () => {
 			try {
+				setLoading(true);
 				const response = await fetch(`/api/store-items/${itemId}`);
 				if (!response.ok) {
 					throw new Error(response.statusText);
@@ -62,12 +66,11 @@ export default function Item() {
 				setStoreItem(data);
 			} catch (error) {
 				console.error("Error fetching item:", error);
+			} finally {
+				setLoading(false);
 			}
 		};
-
-		setLoading(true);
 		fetchItem();
-		setLoading(false);
 	}, []);
 
 	useEffect(() => {
@@ -189,161 +192,174 @@ export default function Item() {
 
 	return (
 		<div className="min-h-screen p-8 bg-gray-50">
-			<div className="max-w-7xl mx-auto bg-white rounded-lg overflow-hidden border-2 border-black">
-				<div className="flex">
-					{/* Left: Item Image */}
-					<div className="w-1/2">
-						<img
-							src={imageDataUrl}
-							alt={storeItem.title}
-							className="w-full h-full object-cover"
-						/>
-					</div>
-					{/* Right: Item Details */}
-					<div className="w-1/2 p-6 flex flex-col">
-						<h1 className="text-3xl font-bold mb-2">{storeItem.title}</h1>
-						<h2 className="text-xl mb-2">
-							Seller:{" "}
-							<Link to={`/profile/${storeItem.user_id}`} className="underline">
-								{storeItem.user_name}
+			<div className="max-w-7xl mx-auto">
+				<Link to="/store" className="flex items-center mb-4">
+					<ArrowLeft size={20} className="text-[#A11833] custom-hover-shadow" />
+					<span className="font-bold text-gray-600 ml-2 hover:font-normal">
+						Back to Store
+					</span>
+				</Link>
+				<div className=" bg-white rounded-lg overflow-hidden border-2 border-black">
+					<div className="flex">
+						{/* Left: Item Image */}
+						<div className="w-1/2">
+							<img
+								src={imageDataUrl}
+								alt={storeItem.title}
+								className="w-full h-full object-cover"
+							/>
+						</div>
+						{/* Right: Item Details */}
+						<div className="w-1/2 p-6 flex flex-col">
+							<h1 className="text-3xl font-bold mb-2">{storeItem.title}</h1>
+							<Link to={`/profile/${storeItem.user_id}`}>
+								<div className="flex items-center space-x-2 mb-2">
+									<Avatar className="w-14 h-14">
+										<AvatarImage
+											src={storeItem.user_profile_picture_url}
+											alt={storeItem.user_name}
+											referrerPolicy="no-referrer"
+										/>
+										<AvatarFallback>
+											{getInitials(storeItem.user_name)}
+										</AvatarFallback>
+									</Avatar>
+									<span className="text-xl">{storeItem.user_name}</span>
+									{isOwner && <span className="font-bold text-xl">(You)</span>}
+								</div>
 							</Link>
-							{isOwner && <span className="font-bold ml-2">(You)</span>}
-						</h2>
-						<p className="text-gray-700 mb-4 text-xl">
-							{storeItem.description}
-						</p>
-						<p className="text-2xl font-semibold mb-4">
-							${storeItem.price.toFixed(2)}
-						</p>
-						<div className="flex items-center mb-4">
-							<button
-								onClick={handleHeartClick}
-								disabled={heartLoading}
-								className="flex items-center justify-center"
-							>
-								<Heart
-									className="w-full h-full"
-									stroke="currentColor"
-									strokeWidth={2}
-									fill={heart ? "pink" : "none"}
-								/>
-							</button>
-							<span className="ml-2 text-gray-700 text-2xl">{likeCount}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Condition:</span>
-							<span className="text-gray-700">{storeItem.condition}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Size:</span>
-							<span className="text-gray-700">{storeItem.size}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Gender:</span>
-							<span className="text-gray-700">{storeItem.gender}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Category:</span>
-							<span className="text-gray-700">{storeItem.category}</span>
-						</div>
-						<div className="flex items-center mb-4">
-							<span className="text-gray-700 font-bold mr-2">Color:</span>
-							<span className="text-gray-700">{storeItem.color}</span>
-						</div>
-						<div className="mt-auto">
+							<p className="text-gray-700 mb-4 text-xl">
+								{storeItem.description}
+							</p>
+							<p className="text-2xl font-semibold mb-4">
+								${storeItem.price.toFixed(2)}
+							</p>
+							<div className="flex items-center mb-4">
+								<button
+									onClick={handleHeartClick}
+									disabled={heartLoading}
+									className="flex items-center justify-center"
+								>
+									<Heart
+										className="w-full h-full"
+										stroke="currentColor"
+										strokeWidth={2}
+										fill={heart ? "pink" : "none"}
+									/>
+								</button>
+								<span className="ml-2 text-gray-700 text-2xl">{likeCount}</span>
+							</div>
+							<div className="flex items-center mb-4">
+								<span className="text-gray-700 font-bold mr-2">Condition:</span>
+								<span className="text-gray-700">{storeItem.condition}</span>
+							</div>
+							<div className="flex items-center mb-4">
+								<span className="text-gray-700 font-bold mr-2">Size:</span>
+								<span className="text-gray-700">{storeItem.size}</span>
+							</div>
+							<div className="flex items-center mb-4">
+								<span className="text-gray-700 font-bold mr-2">Gender:</span>
+								<span className="text-gray-700">{storeItem.gender}</span>
+							</div>
+							<div className="flex items-center mb-4">
+								<span className="text-gray-700 font-bold mr-2">Category:</span>
+								<span className="text-gray-700">{storeItem.category}</span>
+							</div>
+							<div className="flex items-center mb-4">
+								<span className="text-gray-700 font-bold mr-2">Color:</span>
+								<span className="text-gray-700">{storeItem.color}</span>
+							</div>
 							<div className="mt-auto">
-								{!storeItem.is_available ? (
-									<Button
-										size="sm"
-										className="w-full mb-4 border-2 border-black"
-										disabled={storeItem.current_user_made_offer}
-										variant={"default"}
-									>
-										Item Sold
-									</Button>
-								) : isOwner ? (
-									// If the user is the owner, show the delete button + dialog popup
-									<Dialog>
-										<DialogTrigger asChild>
-											<Button
-												variant="destructive"
-												size="lg"
-												className="w-full mb-4"
-											>
-												Delete Item
-											</Button>
-										</DialogTrigger>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Confirm Deletion</DialogTitle>
-												<DialogDescription>
-													Are you sure you want to delete this item? This action
-													cannot be undone.
-												</DialogDescription>
-											</DialogHeader>
-											<DialogFooter>
+								<div className="mt-auto">
+									{!storeItem.is_available ? (
+										<Button
+											size="lg"
+											className="w-full mb-4 border-black bg-gray-400"
+											variant={"default"}
+										>
+											Item Sold
+										</Button>
+									) : isOwner ? (
+										// If the user is the owner, show the delete button + dialog popup
+										<Dialog>
+											<DialogTrigger asChild>
 												<Button
 													variant="destructive"
-													onClick={() => handleDeleteItem(storeItem!.id)}
-													disabled={deleteLoading}
+													size="lg"
+													className="w-full mb-4"
 												>
-													{deleteLoading && (
-														<Loader2 className="animate-spin" />
-													)}
-													{deleteLoading ? "Deleting..." : "Confirm Delete"}
+													Delete Item
 												</Button>
-											</DialogFooter>
-										</DialogContent>
-									</Dialog>
-								) : (
-									// If the user is not the owner, show the make offer button + dialog popup
-									// Also check if the user has already made an offer
-									<Dialog>
-										<DialogTrigger asChild>
-											<Button
-												size="sm"
-												className="w-full mb-4 border-2 border-black"
-												disabled={storeItem.current_user_made_offer}
-												variant={
-													storeItem.current_user_made_offer
-														? "default"
-														: "outline"
-												}
-											>
-												{storeItem.current_user_made_offer
-													? "Existing Offer Pending"
-													: "Make Offer"}
-											</Button>
-										</DialogTrigger>
-										<DialogContent>
-											<DialogHeader>
-												<DialogTitle>Make Offer</DialogTitle>
-												<DialogDescription>
-													Enter your offer below:
-												</DialogDescription>
-											</DialogHeader>
-											<Input
-												type="text"
-												placeholder="e.g. 19.99"
-												value={offerAmount}
-												onChange={(e) => setOfferAmount(e.target.value)}
-												className="w-full mb-2"
-											/>
-											{offerError && (
-												<p className="text-red-500 mb-2">{offerError}</p>
-											)}
-											<DialogFooter>
+											</DialogTrigger>
+											<DialogContent>
+												<DialogHeader>
+													<DialogTitle>Confirm Deletion</DialogTitle>
+													<DialogDescription>
+														Are you sure you want to delete this item? This
+														action cannot be undone.
+													</DialogDescription>
+												</DialogHeader>
+												<DialogFooter>
+													<Button
+														variant="destructive"
+														onClick={() => handleDeleteItem(storeItem!.id)}
+														disabled={deleteLoading}
+													>
+														{deleteLoading && (
+															<Loader2 className="animate-spin" />
+														)}
+														{deleteLoading ? "Deleting..." : "Confirm Delete"}
+													</Button>
+												</DialogFooter>
+											</DialogContent>
+										</Dialog>
+									) : (
+										// If the user is not the owner, show the make offer button + dialog popup
+										// Also check if the user has already made an offer
+										<Dialog>
+											<DialogTrigger asChild>
 												<Button
-													onClick={handleMakeOffer}
-													disabled={offerAmount === "" || offerLoading}
+													size="lg"
+													className="w-full mb-4 border-2 bg-red-700 hover:bg-red-800 disabled:bg-gray-400"
+													disabled={storeItem.current_user_made_offer}
 												>
-													{offerLoading && <Loader2 className="animate-spin" />}
-													Submit Offer
+													{storeItem.current_user_made_offer
+														? "Existing Offer Pending"
+														: "Make Offer"}
 												</Button>
-											</DialogFooter>
-										</DialogContent>
-									</Dialog>
-								)}
+											</DialogTrigger>
+											<DialogContent>
+												<DialogHeader>
+													<DialogTitle>Make Offer</DialogTitle>
+													<DialogDescription>
+														Enter your offer below:
+													</DialogDescription>
+												</DialogHeader>
+												<Input
+													type="text"
+													placeholder="e.g. 19.99"
+													value={offerAmount}
+													onChange={(e) => setOfferAmount(e.target.value)}
+													className="w-full mb-2"
+												/>
+												{offerError && (
+													<p className="text-red-500 mb-2">{offerError}</p>
+												)}
+												<DialogFooter>
+													<Button
+														onClick={handleMakeOffer}
+														disabled={offerAmount === "" || offerLoading}
+													>
+														{offerLoading && (
+															<Loader2 className="animate-spin" />
+														)}
+														Submit Offer
+													</Button>
+												</DialogFooter>
+											</DialogContent>
+										</Dialog>
+									)}
+								</div>
 							</div>
 						</div>
 					</div>

@@ -198,12 +198,64 @@ export function DropdownMenuCondition({
 		</DropdownMenu>
 	);
 }
+interface DropdownMenuGenderProps {
+	selectedGenders: string[];
+	setSelectedGenders: React.Dispatch<React.SetStateAction<string[]>>;
+}
+
+export function DropdownMenuGender({
+	selectedGenders,
+	setSelectedGenders,
+}: DropdownMenuGenderProps) {
+	const genderOptions = ["Men", "Women", "Unisex"];
+
+	const toggleGender = (gender: string) => {
+		if (selectedGenders.includes(gender)) {
+			setSelectedGenders(selectedGenders.filter((g) => g !== gender));
+		} else {
+			setSelectedGenders([...selectedGenders, gender]);
+		}
+	};
+
+	return (
+		<DropdownMenu>
+			<DropdownMenuTrigger asChild>
+				<Button
+					variant="outline"
+					size="lg"
+					className={`text-base border-1 border-black ${
+						selectedGenders.length > 0 ? "font-extrabold bg-red-100" : ""
+					}`}
+				>
+					Gender
+				</Button>
+			</DropdownMenuTrigger>
+			<DropdownMenuContent className="w-56">
+				<DropdownMenuLabel>Select Gender</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				{genderOptions.map((gender) => (
+					<DropdownMenuCheckboxItem
+						key={gender}
+						checked={selectedGenders.includes(gender)}
+						onCheckedChange={() => toggleGender(gender)}
+						onSelect={(e) => e.preventDefault()}
+					>
+						<div className="flex items-center space-x-2">
+							<span>{gender}</span>
+						</div>
+					</DropdownMenuCheckboxItem>
+				))}
+			</DropdownMenuContent>
+		</DropdownMenu>
+	);
+}
 
 export default function Store() {
 	// Filter states
 	const [selectedColors, setSelectedColors] = useState<string[]>([]);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 	const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
+	const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
 	const [storeItems, setStoreItems] = useState<StoreItem[]>([]);
 	const [loading, setLoading] = useState(true);
 
@@ -237,7 +289,9 @@ export default function Store() {
 		const conditionMatch =
 			selectedConditions.length === 0 ||
 			selectedConditions.includes(item.condition);
-		return colorMatch && categoryMatch && conditionMatch;
+		const genderMatch =
+			selectedGenders.length === 0 || selectedGenders.includes(item.gender);
+		return colorMatch && categoryMatch && conditionMatch && genderMatch;
 	});
 
 	if (loading) {
@@ -270,6 +324,10 @@ export default function Store() {
 						<DropdownMenuCondition
 							selectedConditions={selectedConditions}
 							setSelectedConditions={setSelectedConditions}
+						/>
+						<DropdownMenuGender
+							selectedGenders={selectedGenders}
+							setSelectedGenders={setSelectedGenders}
 						/>
 					</div>
 					<Link to="/upload-item">
@@ -332,6 +390,26 @@ export default function Store() {
 									e.stopPropagation();
 									setSelectedConditions((prev) =>
 										prev.filter((c) => c !== condition)
+									);
+								}}
+								className="ml-1"
+							>
+								<X size={16} />
+							</button>
+						</Badge>
+					))}
+					{selectedGenders.map((gender) => (
+						<Badge
+							key={`gender-${gender}`}
+							className="flex items-center p-1 text-base"
+							variant="secondary"
+						>
+							{gender}
+							<button
+								onClick={(e) => {
+									e.stopPropagation();
+									setSelectedGenders((prev) =>
+										prev.filter((g) => g !== gender)
 									);
 								}}
 								className="ml-1"

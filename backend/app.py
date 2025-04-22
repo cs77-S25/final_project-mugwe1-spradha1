@@ -431,7 +431,7 @@ def get_store_items(token_data):
 @validate_authentication()
 def get_store_item(token_data, item_id): 
     auth_user_id = token_data['user_id']
-    # also fetch User data (name, email)
+    # also fetch User data (name, profile picture)
     item = ItemListing.query.filter_by(id=item_id).first()
     if not item:
         return make_response(jsonify({"error": "Item not found"}), 404)
@@ -440,9 +440,10 @@ def get_store_item(token_data, item_id):
         return make_response(jsonify({"error": "User of listed item not found"}), 404)
     item_data = item.serialize()
     user_data = user.serialize()
-    # Response includes all of item data and user name + email
+    # Response includes all of item data and user name + profile picture
     response = item_data.copy() 
     response["user_name"] = user_data["name"]
+    response["user_profile_picture_url"] = user_data["profile_picture_url"]
 
     # also fetch whether the user has liked the item and total like count
     response["liked"] = ItemLike.query.filter_by(item_id=item_id, user_id=auth_user_id).first() is not None
@@ -1087,6 +1088,59 @@ def create_comment(token_data, post_id):
     db.session.add(new_comment)
     db.session.commit()
     return jsonify(new_comment.serialize()), 201
+
+@app.route('/api/user/<int:user_id>/forum-posts', methods=['GET'])
+@validate_authentication()
+def get_user_forum_posts(token_data, user_id):
+    # Fetch all forum posts made by the user
+    posts = ForumPost.query.filter_by(user_id=user_id).order_by(ForumPost.created_at.desc()).all()
+    posts_list = [post.serialize() for post in posts]
+    return make_response(jsonify(posts_list), 200)
+
+# Endpoint to fetch
+# 1) total number of active items listed
+# 2) total number of items sold
+# 3) total number of items bought
+# 4) total number of item likes received
+# 5) total number of forums posts made
+@app.route('/api/user/<int:user_id>/stats', methods=['GET'])
+@validate_authentication()
+def get_user_stats(token_data, user_id):
+    # Fetch stats
+    total_items_listed = ItemListing.query.filter_by(user_id=user_id, is_available=True).count()
+    total_items_sold = ItemOffer.query.filter_by(seller_id=user_id, status="Completed").count()
+    total_items_bought = ItemOffer.query.filter_by(buyer_id=user_id, status="Completed").count()
+    total_item_likes_received = ItemLike\
+        .query \
+        .join(ItemListing, ItemLike.item_id == ItemListing.id) \
+        .filter(ItemListing.user_id == user_id) \
+        .count()
+    total_forum_posts_made = ForumPost.query.filter_by(user_id=user_id).count()
+
+    stats = {
+        "total_items_listed": total_items_listed,
+        "total_items_sold": total_items_sold,
+        "total_items_bought": total_items_bought,
+        "total_item_likes_received": total_item_likes_received,
+        "total_forum_posts_made": total_forum_posts_made
+    }
+
+    return make_response(jsonify(stats), 200)
+
+@app.route('/api/forum/posts/<int:forum_id>', methods=['DELETE'])
+@validate_authentication()
+def delete_forum_post(token_data, forum_id):
+    user_id = token_data['user_id']
+    # Check if the authenticated user is the owner of the post
+    post = ForumPost.query.filter_by(id=forum_id, user_id=user_id).first()
+    if not post:
+        return make_response(jsonify({"error": "Forum post not found or you do not have permission to delete this post"}), 403)
+
+    # Delete the post
+    db.session.delete(post)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Forum post deleted successfully"}), 200)
 
 
 if __name__ == '__main__':

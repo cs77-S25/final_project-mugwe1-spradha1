@@ -6,6 +6,7 @@ import {
 	DropdownMenuContent,
 	DropdownMenuGroup,
 	DropdownMenuItem,
+	DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import LoginButton from "./loginButton";
 import { useAuth } from "@/context/UserContext";
@@ -35,16 +36,14 @@ const AvatarDropdown = () => {
 					<Link to={`/profile/${userAuth.user.id}`}>
 						<DropdownMenuItem>My Profile</DropdownMenuItem>
 					</Link>
-					<Link to="/upload-item">
-						<DropdownMenuItem>List Store Item</DropdownMenuItem>
-					</Link>
-					<DropdownMenuItem>Create Forum Post</DropdownMenuItem>
+					<DropdownMenuSeparator />
 					<Link to="/offers-made">
 						<DropdownMenuItem>Offers Made</DropdownMenuItem>
 					</Link>
 					<Link to="/offers-received">
 						<DropdownMenuItem>Offers Received</DropdownMenuItem>
 					</Link>
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						onClick={() => {
 							userAuth.logout();

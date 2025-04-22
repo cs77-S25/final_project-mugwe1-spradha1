@@ -13,7 +13,10 @@ export default defineConfig({
 	},
 	server: {
 		// add this line to allow ngrok to connect to the frontend
-		allowedHosts: ["bc6c-130-58-166-241.ngrok-free.app"],
+		allowedHosts: [
+			"bc6c-130-58-166-241.ngrok-free.app",
+			"ce0d-130-58-164-147.ngrok-free.app",
+		],
 		// Proxity is necessary due to CORS issues with local dev
 		// In theory, this should allow ngrok to hit the backend server as well
 		proxy: {

@@ -18,6 +18,43 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+	CategoryType,
+	categoryColors,
+	defaultColors,
+	ForumPost,
+} from "@/pages/forum/ForumConstants";
+import { Link } from "react-router-dom";
+
+interface ProfileStats {
+	total_items_listed: number;
+	total_items_sold: number;
+	total_items_bought: number;
+	total_item_likes_received: number;
+	total_forum_posts_made: number;
+}
+
+// Forum post components within the profile page
+function profileForumPost(post: ForumPost) {
+	const colors = categoryColors[post.category] || defaultColors;
+	const badgeCls = `
+                flex gap-0.5 px-1 py-0.5 text-white rounded text-xs mb-2
+                ${colors.bgColor} hover:text-white cursor-pointer
+              `;
+
+	return (
+		<Link key={post.id} to={`/forum/post/${post.id}`} className="block">
+			<div className="p-6 mb-3 border border-gray-300 rounded shadow-sm bg-gray-50 hover:border-gray-500 hover:bg-gray-200 transition">
+				<h2 className="text-xl font-bold mb-1">{post.title}</h2>
+				<button className={badgeCls}>{post.category}</button>
+				<div className="text-sm text-gray-600 mb-2">
+					{post.author_name} – {new Date(post.created_at).toLocaleDateString()}
+				</div>
+				<p>{post.content}</p>
+			</div>
+		</Link>
+	);
+}
 
 export default function Profile() {
 	const params = useParams();
@@ -33,6 +70,8 @@ export default function Profile() {
 	const [isOwner, setIsOwner] = useState(false);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [newBio, setNewBio] = useState("");
+	const [forumPosts, setForumPosts] = useState<ForumPost[]>([]);
+	const [profileStats, setProfileStats] = useState<ProfileStats | null>(null);
 	const userId = parseInt(params.userId);
 
 	const userAuth = useAuth();
@@ -60,7 +99,7 @@ export default function Profile() {
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}
-				const data = await response.json();
+				const data: StoreItem[] = await response.json();
 				setProfileStoreItems(data);
 			} catch (error) {
 				console.error("Error fetching user:", error);
@@ -73,18 +112,53 @@ export default function Profile() {
 				if (!response.ok) {
 					throw new Error(response.statusText);
 				}
-				const data = await response.json();
+				const data: StoreItem[] = await response.json();
 				setProfileLikedItems(data);
 			} catch (error) {
 				console.error("Error fetching user:", error);
 			}
 		};
 
-		setLoading(true);
-		fetchProfileUser();
-		fetchProfileStoreItems();
-		fetchProfileLikedItems();
-		setLoading(false);
+		const fetchForumPosts = async () => {
+			try {
+				const response = await fetch(`/api/user/${userId}/forum-posts`);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
+				const data: ForumPost[] = await response.json();
+				setForumPosts(data);
+			} catch (error) {
+				console.error("Error fetching forum posts:", error);
+			}
+		};
+
+		const fetchProfileStats = async () => {
+			try {
+				const response = await fetch(`/api/user/${userId}/stats`);
+				if (!response.ok) {
+					throw new Error(response.statusText);
+				}
+				const data: ProfileStats = await response.json();
+				setProfileStats(data);
+			} catch (error) {
+				console.error("Error fetching profile stats:", error);
+			}
+		};
+
+		// Fetch all data in parallel
+		const fetchAllData = async () => {
+			setLoading(true);
+			await Promise.all([
+				fetchProfileUser(),
+				fetchProfileStoreItems(),
+				fetchProfileLikedItems(),
+				fetchForumPosts(),
+				fetchProfileStats(),
+			]);
+			setLoading(false);
+		};
+
+		fetchAllData();
 	}, [userId]);
 
 	// When profileUser loads, initialize bio state
@@ -189,21 +263,35 @@ export default function Profile() {
 				</div>
 
 				<div className="text-2xl font-bold mb-4">Stats</div>
-				<div className="grid grid-cols-4 gap-4 w-full mt-4">
+				<div className="grid grid-cols-5 gap-4 w-full mt-4">
 					<div className="flex flex-col items-center">
-						<p className="text-xl font-bold">10</p>
-						<p className="text-lg text-muted-foreground">Past Sales</p>
-					</div>
-					<div className="flex flex-col items-center">
-						<p className="text-xl font-bold">10</p>
+						<p className="text-xl font-bold">
+							{profileStats ? profileStats.total_items_listed : 0}
+						</p>
 						<p className="text-lg text-muted-foreground">Items on Sale</p>
 					</div>
 					<div className="flex flex-col items-center">
-						<p className="text-xl font-bold">10</p>
+						<p className="text-xl font-bold">
+							{profileStats ? profileStats.total_items_bought : 0}
+						</p>
+						<p className="text-lg text-muted-foreground">Past Sales</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">
+							{profileStats ? profileStats.total_items_sold : 0}
+						</p>
 						<p className="text-lg text-muted-foreground">Purchases</p>
 					</div>
 					<div className="flex flex-col items-center">
-						<p className="text-xl font-bold">10</p>
+						<p className="text-xl font-bold">
+							{profileStats ? profileStats.total_item_likes_received : 0}
+						</p>
+						<p className="text-lg text-muted-foreground">Likes Received</p>
+					</div>
+					<div className="flex flex-col items-center">
+						<p className="text-xl font-bold">
+							{profileStats ? profileStats.total_forum_posts_made : 0}
+						</p>
 						<p className="text-lg text-muted-foreground">Forum Posts</p>
 					</div>
 				</div>
@@ -236,7 +324,12 @@ export default function Profile() {
 						</div>
 					</TabsContent>
 					<TabsContent value="forum">
-						<div className="mt-4 text-center">No forum posts yet.</div>
+						{forumPosts.length === 0 && (
+							<div className="mt-6 text-center">No forum posts yet.</div>
+						)}
+						<div className="flex flex-col space-y-2 mt-4">
+							{forumPosts.map((post) => profileForumPost(post))}
+						</div>
 					</TabsContent>
 				</Tabs>
 			</div>

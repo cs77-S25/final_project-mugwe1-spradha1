@@ -14,7 +14,7 @@ export interface StoreItem {
 		| "Hats"
 		| "Accessories"
 		| "Misc";
-	gender: string;
+	gender: "Men" | "Women" | "Gender Neutral";
 	condition: "Excellent" | "Good" | "Fair";
 	color:
 		| "Red"
