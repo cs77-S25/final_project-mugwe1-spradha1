@@ -8,13 +8,14 @@ interface StoreItemCardProps {
 }
 
 export const StoreItemCard: React.FC<StoreItemCardProps> = ({ storeItem }) => {
+	console.log("StoreItemCard", storeItem);
 	const [heart, setHeart] = useState(storeItem.liked);
 	const [heartLoading, setHeartLoading] = useState(false);
 	const [likeCount, setLikeCount] = useState(storeItem.like_count);
 	const imageDataUrl = `data:image/jpeg;base64,${storeItem.picture_data}`;
 
 	const handleHeartClick = async () => {
-		if (heartLoading) return; // guard against spamming
+		if (heartLoading) return;
 		setHeartLoading(true);
 
 		try {
@@ -39,8 +40,15 @@ export const StoreItemCard: React.FC<StoreItemCardProps> = ({ storeItem }) => {
 					<img
 						src={imageDataUrl}
 						alt={storeItem.title}
-						className="h-full w-full object-cover"
+						className={`h-full w-full object-cover ${
+							storeItem.is_available ? "" : "filter brightness-80"
+						}`}
 					/>
+					{!storeItem.is_available && (
+						<div className="absolute inset-0 flex items-center justify-center">
+							<span className="text-yellow-300 text-3xl font-bold">SOLD</span>
+						</div>
+					)}
 				</div>
 			</Link>
 

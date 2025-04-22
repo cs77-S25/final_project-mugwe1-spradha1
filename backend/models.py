@@ -45,8 +45,10 @@ class ItemListing(db.Model):
     condition = db.Column(db.String(50), nullable=False)
     category = db.Column(db.String(50), nullable=False)
     picture_data = db.Column(db.LargeBinary, nullable=False)
+    is_available = db.Column(db.Boolean, default=True)
 
     likes = db.relationship('ItemLike', backref='item', lazy=True)
+    offers = db.relationship('ItemOffer', back_populates='item', lazy=True)
 
     def serialize(self):
         encoded_picture = base64.b64encode(self.picture_data).decode('utf-8')
@@ -63,6 +65,7 @@ class ItemListing(db.Model):
             "condition": self.condition,
             "category": self.category,
             "picture_data": encoded_picture,
+            "is_available": self.is_available,
         }
 
 class ForumPost(db.Model):
@@ -159,4 +162,34 @@ class ItemLike(db.Model):
             "user_id": self.user_id,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+    
+class ItemOffer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item_listing.id'), nullable=False)
+    buyer_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    seller_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    offer_amount = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    status = db.Column(db.String(50), server_default="Pending")  # e.g. "Pending", "Accepted", "Declined", "Completed", "Cancelled"
+
+    # both buyer and seller must confirm the offer
+    buyer_completed = db.Column(db.Boolean, default=False)
+    seller_completed = db.Column(db.Boolean, default=False)
+
+    # Relationships
+    item = db.relationship('ItemListing', back_populates='offers')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "item_id": self.item_id,
+            "buyer_id": self.buyer_id,
+            "seller_id": self.seller_id,
+            "offer_amount": self.offer_amount,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "status": self.status,
+            "buyer_completed": self.buyer_completed,
+            "seller_completed": self.seller_completed,
+        }
+
 
