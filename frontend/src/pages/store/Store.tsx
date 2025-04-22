@@ -317,7 +317,7 @@ export default function Store() {
 							selectedColors={selectedColors}
 							setSelectedColors={setSelectedColors}
 						/>
-						<DropdownMenuCategory
+						<DropdownMenuCategory 
 							selectedCategories={selectedCategories}
 							setSelectedCategories={setSelectedCategories}
 						/>
@@ -331,7 +331,7 @@ export default function Store() {
 						/>
 					</div>
 					<Link to="/upload-item">
-						<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8 dark:bg-gray-700 dark:hover:bg-gray-800 dark:hover:font-bold dark:hover:text-[#DB572C]">
+						<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8 dark:bg-gray-700 dark:hover:bg-gray-800 dark:hover:font-bold dark:hover:text-[#DB572C] transition-all duration-600 ease-in-out cursor-pointer">
 							<Plus size={24} className="min-w-4" />
 							List Item
 						</button>

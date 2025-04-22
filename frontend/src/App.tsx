@@ -12,6 +12,7 @@ import OffersReceived from "./pages/OffersReceived/OffersReceived";
 import "./app.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
+
 function App() {
 	return (
 		<>

@@ -57,7 +57,7 @@ export default function OffersMade() {
 	});
 
 	return (
-		<div className="min-h-screen p-8 bg-gray-50">
+		<div className="min-h-screen p-8 bg-gray-50 dark:bg-black">
 			<div className="max-w-7xl mx-auto">
 				<h1 className="text-5xl font-bold mb-4">My Offers Made</h1>
 				<h2 className="text-2xl mb-6">
@@ -65,12 +65,12 @@ export default function OffersMade() {
 				</h2>
 
 				<Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
-					<TabsList className="mb-4">
-						<TabsTrigger value="Pending">Pending</TabsTrigger>
-						<TabsTrigger value="Accepted">Accepted</TabsTrigger>
-						<TabsTrigger value="Declined">Declined</TabsTrigger>
-						<TabsTrigger value="Completed">Completed</TabsTrigger>
-						<TabsTrigger value="Cancelled">Cancelled</TabsTrigger>
+					<TabsList className="mb-4 dark:bg-gray-800 dark:hover:bg-gray-900">
+						<TabsTrigger className="dark:hover:ring-1 dark:hover:ring-[#DB572C]" value="Pending">Pending</TabsTrigger>
+						<TabsTrigger className="dark:hover:ring-1 dark:hover:ring-[#DB572C]" value="Accepted">Accepted</TabsTrigger>
+						<TabsTrigger className="dark:hover:ring-1 dark:hover:ring-[#DB572C]" value="Declined">Declined</TabsTrigger>
+						<TabsTrigger className="dark:hover:ring-1 dark:hover:ring-[#DB572C]" value="Completed">Completed</TabsTrigger>
+						<TabsTrigger className="dark:hover:ring-1 dark:hover:ring-[#DB572C]" value="Cancelled">Cancelled</TabsTrigger>
 					</TabsList>
 
 					<TabsContent value="Pending">

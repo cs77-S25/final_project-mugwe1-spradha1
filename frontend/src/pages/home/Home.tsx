@@ -1,38 +1,134 @@
-import React from "react";
-// import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
+import { useAuth } from "@/context/UserContext";
+import { Loader2 } from "lucide-react";
+import LoginButton from "@/components/loginButton";
 
 export default function Home() {
-	return (
-		<div
-			className="min-h-screen w-full bg-gray-100 text-black flex flex-col"
-			style={{
-				backgroundImage:
-					"radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)",
-				backgroundSize: "20px 20px",
-			}}>
-			{/* <header className="flex justify-center py-4">
-				
-			</header> */}
+	const userAuth = useAuth();
+	const navigate = useNavigate();
 
-			<main className="flex-1 flex flex-col items-center justify-center px-4 text-center">
-				<img
-					src="https://via.placeholder.com/150"
-					alt="Logo Placeholder"
-					className="mb-4"
-				/>
-				{/* still trying to change the font without error */}
-				<div className="relative inline-block mb-6">
-					<h1 className="text-[3rem] font-bold leading-none font-nothing">
-						The Platform for Sustainable Style
-					</h1>
-				</div>
+	useEffect(() => {
+		if (userAuth.user) {
+			navigate("profile/" + userAuth.user.id);
+		}
+	}, [userAuth.user, navigate]);
 
-				<p className="max-w-2xl text-lg md:text-xl font-semibold text-gray-700">
-					Welcome to Swycle, a community of Swatties shaping sustainable style.
-					<br />
-					Connect, Buy, Sell, and Exchange quality pieces
-				</p>
-			</main>
-		</div>
-	);
+	if (userAuth.user) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<Loader2 className="animate-spin" size={48} />
+			</div>
+		);
+	}
+
+
+  return (
+    <main className="min-h-screen bg-white text-gray-800">
+      {/* First section */}
+      <section className="bg-gradient-to-r from-[#A11833] to-[#3F030F] py-24">
+        <div className="container mx-auto px-6 md:px-12 text-center">
+          <img
+            src="https://via.placeholder.com/150"
+            alt="Logo Placeholder"
+            className="mx-auto mb-6"
+          />
+          <h1 className="text-4xl md:text-6xl font-bold leading-none text-white mb-4">
+            Where Style Meets Sustainability
+          </h1>
+          <p className="text-base md:text-lg text-gray-200 mb-8">
+            Whether you're decluttering your closet, discovering secondhand
+            gems, or diving into conversations about ethical style, you're in
+            the right place.
+          </p>
+
+          {/* Sign In button */}
+          <div className="flex justify-center">
+            {!userAuth.user && <LoginButton variant="home" />}
+          </div>
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-6 md:px-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Your All-in-One Fashion Platform
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: "🛍️",
+                title: "Buy & Sell",
+                desc: "List items with ease or browse curated wardrobes from students just like you. Swycle makes it effortless to shop and sell sustainably.",
+              },
+              {
+                icon: "💬",
+                title: "Community Forum",
+                desc: "Connect with a vibrant community of thrifters and sustainability advocates. Share tips, ask questions, showcase your fits, and stay updated on campus fashion events.",
+              },
+              {
+                icon: "🌱",
+                title: "Why Swycle?",
+                desc: "Because fast fashion isn’t the future. By rethinking how we buy, sell, and talk about clothes, Swycle helps build a culture of reuse and respect. Together, we’re making fashion more affordable, expressive, and eco-conscious.",
+              },
+            ].map((item, idx) => (
+              <div
+                key={idx}
+                className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition"
+              >
+                <div className="text-5xl mb-4">{item.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <p className="text-gray-600">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16">
+        <div className="container mx-auto px-6 md:px-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Frequently Asked Questions
+          </h2>
+          <div className="max-w-2xl mx-auto space-y-4">
+            {[
+              {
+                q: "How long is the white paper?",
+                a: "It’s 25 pages of comprehensive strategies and case studies.",
+              },
+              {
+                q: "Is it really free?",
+                a: "Yes! No cost, no credit card required.",
+              },
+              {
+                q: "Can I share it with my team?",
+                a: "Absolutely—feel free to circulate it.",
+              },
+            ].map((faq, i) => (
+              <details
+                key={i}
+                className="border border-gray-200 rounded-lg p-4"
+              >
+                <summary className="font-semibold cursor-pointer">
+                  {faq.q}
+                </summary>
+                <p className="mt-2 text-gray-600">{faq.a}</p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gradient-to-r from-[#A11833] to-[#3F030F] py-8">
+        <div className="container text-white font-bold mx-auto px-6 md:px-12 text-center">
+          <p>© {new Date().getFullYear()} Swycle.</p>
+        </div>
+      </footer>
+    </main>
+  );
 }
+
