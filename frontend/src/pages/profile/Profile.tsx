@@ -272,13 +272,13 @@ export default function Profile() {
 					</div>
 					<div className="flex flex-col items-center">
 						<p className="text-xl font-bold">
-							{profileStats ? profileStats.total_items_bought : 0}
+							{profileStats ? profileStats.total_items_sold : 0}
 						</p>
 						<p className="text-lg text-muted-foreground">Past Sales</p>
 					</div>
 					<div className="flex flex-col items-center">
 						<p className="text-xl font-bold">
-							{profileStats ? profileStats.total_items_sold : 0}
+							{profileStats ? profileStats.total_items_bought : 0}
 						</p>
 						<p className="text-lg text-muted-foreground">Purchases</p>
 					</div>

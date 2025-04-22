@@ -69,11 +69,17 @@ export const StoreItemCard: React.FC<StoreItemCardProps> = ({ storeItem }) => {
 							fill={heart ? "red" : "none"}
 						/>
 					</button>
-					<span className="ml-2 text-gray-700 dark:text-white">{likeCount}</span>
+					<span className="ml-2 text-gray-700 dark:text-white">
+						{likeCount}
+					</span>
 				</div>
 			</div>
-			<div className="text-gray-700 font-bold dark:text-white dark:font-bold">{storeItem.title}</div>
-			<div className="text-gray-700 dark:text-gray-400">Condition: {storeItem.condition}</div>
+			<div className="text-gray-700 font-bold dark:text-white dark:font-bold">
+				{storeItem.title}
+			</div>
+			<div className="text-gray-700 dark:text-gray-400">
+				Condition: {storeItem.condition}
+			</div>
 		</div>
 	);
 };

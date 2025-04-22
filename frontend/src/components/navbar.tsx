@@ -12,7 +12,7 @@ import LoginButton from "./loginButton";
 import { useAuth } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/utils";
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/mode-toggle";
 
 const AvatarDropdown = () => {
 	const userAuth = useAuth();
@@ -69,9 +69,9 @@ export default function Navbar() {
 			</div>
 			<ul className="flex items-center space-x-4">
 				{userAuth.user ? (
-					<>	
+					<>
 						<li>
-							<ModeToggle/>
+							<ModeToggle />
 						</li>
 						<li>
 							<Link to="/forum" className="text-white font-bold hover:text-[#DB572C] px-3 py-2 rounded-lg hover:bg-white hover:font-bold transition-colors duration-400">

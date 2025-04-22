@@ -207,7 +207,7 @@ export function DropdownMenuGender({
 	selectedGenders,
 	setSelectedGenders,
 }: DropdownMenuGenderProps) {
-	const genderOptions = ["Men", "Women", "Unisex"];
+	const genderOptions = ["Men", "Women", "Gender Neutral"];
 
 	const toggleGender = (gender: string) => {
 		if (selectedGenders.includes(gender)) {
