@@ -26,11 +26,11 @@ export default function Sidebar({
     };
 
     return (
-        <div className={`relative h-[calc(100vh-8rem)] mt-8 ml-4 bg-[#A11833] hover:bg-[#3F030F] transition-all duration-600 ease-in-out rounded-lg ${
+        <div className={`relative h-[calc(100vh-8rem)] mt-8 ml-4 bg-[#A11833] hover:bg-[#3F030F] transition-all duration-600 ease-in-out rounded-lg dark:bg-gray-950 dark:ring-1 dark:ring-white dark:hover:bg-gray-800 dark:hover:ring-[#DB572C] ${
             isCollapsed ? "w-20" : "w-64"} ${className || ""}`}>
             <button
                 onClick={() => setIsCollapsed(!isCollapsed)}
-                className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 hover:bg-gray-400 cursor-pointer hover:text-white shadow-md z-50 border border-gray-200"
+                className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-1.5 hover:bg-gray-400 cursor-pointer hover:text-white shadow-md z-50 border border-gray-200 dark:bg-gray-900 dark:hover:bg-gray-700"
                 style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
                 aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}>
                 {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

@@ -6,6 +6,7 @@ import { UserProvider } from "@/context/UserContext.tsx";
 import "./index.css";
 import App from "./App.tsx";
 
+
 const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 // annoying type error for GoogleOauthProvider

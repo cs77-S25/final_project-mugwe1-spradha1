@@ -54,7 +54,7 @@ export function DropdownMenuColors({
 				<Button
 					variant="outline"
 					size="lg"
-					className={`text-base border-1 border-black ${
+					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedColors.length > 0 ? "font-extrabold" : ""
 					} ${selectedColors.length > 0 ? "bg-red-100" : ""}
 					`}
@@ -118,7 +118,7 @@ export function DropdownMenuCategory({
 				<Button
 					variant="outline"
 					size="lg"
-					className={`text-base border-1 border-black ${
+					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedCategories.length > 0 ? "font-extrabold" : ""
 					} ${selectedCategories.length > 0 ? "bg-red-100" : ""}
 					`}
@@ -171,7 +171,7 @@ export function DropdownMenuCondition({
 				<Button
 					variant="outline"
 					size="lg"
-					className={`text-base border-1 border-black ${
+					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedConditions.length > 0 ? "font-extrabold" : ""
 					} ${selectedConditions.length > 0 ? "bg-red-100" : ""}
 					`}
@@ -273,7 +273,7 @@ export default function Store() {
 						/>
 					</div>
 					<Link to="/upload-item">
-						<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8">
+						<button className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white mr-8 dark:bg-gray-700 dark:hover:bg-gray-800 dark:hover:font-bold dark:hover:text-[#DB572C]">
 							<Plus size={24} className="min-w-4" />
 							List Item
 						</button>

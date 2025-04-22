@@ -66,13 +66,13 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
   }
 
   return (
-    <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex items-center justify-center z-50" onClick={handleOutsideClick}>
-      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md " >
-        <h2 className="text-2xl font-bold mb-4">Create New Post</h2>
+    <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex items-center justify-center z-50 dark:bg-gray-900" onClick={handleOutsideClick}>
+      <div className="bg-white p-6 rounded shadow-lg w-full max-w-md dark:bg-gray-950" >
+        <h2 className="text-2xl font-bold mb-4 dark:text-gray-300">Create New Post</h2>
         {error && <p className="text-red-500 mb-4">{error}</p>}
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2">Title:</label>
+            <label htmlFor="title" className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">Title:</label>
             <input
               type="text"
               id="title"
@@ -85,7 +85,7 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
           </div>
 
           <div className="mb-4">
-            <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2">Content:</label>
+            <label htmlFor="content" className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">Content:</label>
             <textarea
               id="content"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -98,7 +98,7 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
           </div>
 
           <div className="mb-4">
-            <label htmlFor="category" className="block text-gray-700 text-sm font-bold mb-2">Category:</label>
+            <label htmlFor="category" className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">Category:</label>
             <select
               id="category"
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -114,7 +114,7 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
           </div>
 
           <div className="mb-4">
-            <label htmlFor="photo" className="block text-gray-700 text-sm font-bold mb-2">Photo (Optional):</label>
+            <label htmlFor="photo" className="block text-gray-700 text-sm font-bold mb-2 dark:text-gray-400">Photo (Optional):</label>
             <input
               type="file"
               id="photo"

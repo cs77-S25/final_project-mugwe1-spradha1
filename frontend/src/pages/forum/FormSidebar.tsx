@@ -40,7 +40,7 @@ export default function FormSidebar({
   };
 
   const navItemClasses =
-    "flex items-center p-4 rounded-lg text-white hover:text-[#DB572C] hover:bg-white hover:font-bold transition-all duration-600 w-full";
+    "flex items-center p-4 rounded-lg text-white hover:text-[#DB572C] hover:bg-white dark:bg-gray-900 hover:font-bold transition-all duration-600 w-full";
   const layoutClasses = "gap-4";
 
   return (

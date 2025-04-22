@@ -8,10 +8,12 @@ import Profile from "@/pages/profile/Profile";
 import UploadItem from "@/pages/uploadItem/UploadItem";
 import ForumPostPage from "@/pages/forum/ForumPostPage";
 import "./app.css";
+import { ThemeProvider } from "@/components/theme-provider";
 
 function App() {
 	return (
 		<>
+		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
 			{/* Navbar component */}
 			<Navbar />
 			{/* Main content area */}
@@ -25,6 +27,7 @@ function App() {
 				<Route path="/upload-item" element={<UploadItem />} />
 				<Route path="/forum/post/:postId" element={<ForumPostPage />} />
 			</Routes>
+			</ThemeProvider>
 		</>
 	);
 }
