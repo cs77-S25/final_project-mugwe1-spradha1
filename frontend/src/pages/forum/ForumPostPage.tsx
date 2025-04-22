@@ -161,6 +161,8 @@ export default function ForumPostPage() {
 					<Link to={`/profile/${post.user_id}`} className="underline">
 						{post.author_name}
 					</Link>{" "}
+					{isOwner && <span className="font-bold">(You)</span>}{" "}
+					{/* Show "You" if the user is the owner */}
 					on {new Date(post.created_at).toLocaleDateString()}{" "}
 					{/* Use author_name and format date */}
 				</div>
