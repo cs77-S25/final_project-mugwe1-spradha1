@@ -30,4 +30,5 @@ export interface StoreItem {
 	size: string;
 	liked: boolean;
 	like_count: number;
+	is_available: boolean;
 }

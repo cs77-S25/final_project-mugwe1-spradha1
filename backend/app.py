@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, make_response, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS, cross_origin
-from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike, ItemLike
+from models import db, User, ItemListing, ForumPost, ForumComment, ForumLike, ItemLike, ItemOffer
 from datetime import datetime, timedelta
 import os
 from google.auth.transport import requests
@@ -62,6 +62,7 @@ mock_item_listings = [
         "condition": "Good",
         "color": "Blue",
         "size": "M",
+        "is_available": False,
     },
     {
         "id": 2,
@@ -130,7 +131,7 @@ mock_item_listings = [
     },
     {
         "id": 7,
-        "user_id": 1,
+        "user_id": 3,
         "title": "Tote Bag",
         "description": "Tote bag with an anime print.",
         "price": 15.99,
@@ -199,6 +200,53 @@ mock_forum_posts = [
     },
 ]
 
+mock_item_offers = [
+    {
+        "item_id": 1,
+        "seller_id": 1,
+        "buyer_id": 3,
+        "offer_amount": 50.00,
+    },
+    {
+        "item_id": 7,
+        "seller_id": 3,
+        "buyer_id": 2,
+        "offer_amount": 30.00,
+        "status": "Accepted",
+        "buyer_completed": True,
+    },
+    {
+        "item_id": 2,
+        "seller_id": 1,
+        "buyer_id": 3,
+        "offer_amount": 20.00,
+        "status": "Accepted",
+        "seller_completed": True,
+    },
+    {
+        "item_id": 3,
+        "seller_id": 1,
+        "buyer_id": 3,
+        "offer_amount": 15.00,
+        "status": "Declined"
+    },
+    {
+        "item_id": 7,
+        "seller_id": 3,
+        "buyer_id": 1,
+        "offer_amount": 25.00,
+        "status": "Pending"
+    },
+    {
+        "item_id": 7,
+        "seller_id": 3,
+        "buyer_id": 3,
+        "offer_amount": 25.00,
+        "status": "Pending"
+    },
+
+]
+
 
 
 
@@ -215,7 +263,7 @@ def add_mock_data():
             email=user_data["email"],
             created_at=created_at,
             bio=user_data.get("bio"),
-            profile_picture_url=user_data.get("profile_picture_url")
+            profile_picture_url=user_data.get("profile_picture_url"),
         )
         db.session.add(user)
     db.session.commit()
@@ -243,7 +291,8 @@ def add_mock_data():
             gender=item["gender"],
             condition=item["condition"],
             category=item["category"],
-            picture_data=picture_data
+            picture_data=picture_data,
+            is_available=item.get("is_available", True)
         )
         db.session.add(new_item)
     db.session.commit()
@@ -286,10 +335,24 @@ def add_mock_data():
             db.session.add(new_post)
         else:
             print(f"Warning: Skipping mock forum post {post_data['id']} - User {post_data['user_id']} not found.")
+    db.session.commit()
 
-        db.session.commit()
+    # insert item offer mock data
+    for offer in mock_item_offers:
+        item_offer = ItemOffer(
+            item_id=offer["item_id"],
+            seller_id=offer["seller_id"],
+            buyer_id=offer["buyer_id"],
+            offer_amount=offer["offer_amount"],
+            status=offer.get("status", "Pending"),
+            buyer_completed=offer.get("buyer_completed", False),
+            seller_completed=offer.get("seller_completed", False)
+        )
+        db.session.add(item_offer)
 
-        print("Mock data successfully added to the database.")
+    db.session.commit()
+
+    print("Mock data successfully added to the database.")
 
 
 
@@ -337,6 +400,12 @@ def validate_authentication():
                 print("ERROR: Invalid token")
                 return make_response(jsonify({"error": "Invalid authentication token"}), 401)
             
+            # Check that the user_id exists in the database
+            user = User.query.filter_by(id=token_data['user_id']).first()
+            if not user:
+                print("ERROR: User not found")
+                return make_response(jsonify({"error": "Authenticated user not found"}), 401)
+            
             # Pass token data to the route handler
             return f(token_data, *args, **kwargs)
         return decorated_function
@@ -346,9 +415,9 @@ def validate_authentication():
 @app.route('/api/store-items', methods=['GET'])
 @validate_authentication()
 def get_store_items(token_data):
-    #auth_user_id = token_data['user_id']
-    # return all items in order of most recent
-    items = ItemListing.query.order_by(ItemListing.created_at.desc()).all()
+    auth_user_id = token_data['user_id']
+    # return all items in order of most recent that are available
+    items = ItemListing.query.order_by(ItemListing.created_at.desc()).filter_by(is_available=True).all()
     items_list = [item.serialize() for item in items]
     # also fetch whether the user has liked the item and total like count
     for item in items_list:
@@ -361,6 +430,7 @@ def get_store_items(token_data):
 @app.route('/api/store-items/<int:item_id>', methods=['GET'])
 @validate_authentication()
 def get_store_item(token_data, item_id): 
+    auth_user_id = token_data['user_id']
     # also fetch User data (name, email)
     item = ItemListing.query.filter_by(id=item_id).first()
     if not item:
@@ -373,11 +443,14 @@ def get_store_item(token_data, item_id):
     # Response includes all of item data and user name + email
     response = item_data.copy() 
     response["user_name"] = user_data["name"]
-    response["user_email"] = user_data["email"]
 
     # also fetch whether the user has liked the item and total like count
-    response["liked"] = ItemLike.query.filter_by(item_id=item_id, user_id=token_data["user_id"]).first() is not None
+    response["liked"] = ItemLike.query.filter_by(item_id=item_id, user_id=auth_user_id).first() is not None
     response["like_count"] = ItemLike.query.filter_by(item_id=item_id).count()
+
+    # also fetch whether the user has made an offer on the item
+    response["current_user_made_offer"] = ItemOffer.query.filter_by(item_id=item_id, buyer_id=auth_user_id).first() is not None
+
     return make_response(jsonify(response), 200)
 
 # USER
@@ -656,6 +729,272 @@ def update_user_bio(token_data, user_id):
 
     return make_response(jsonify({"message": "Bio updated successfully"}), 200)
 
+# Offers
+@app.route('/api/store-items/<int:item_id>/offer', methods=['POST'])
+@validate_authentication()
+def make_offer(token_data, item_id):
+    buyer_id = token_data['user_id']
+
+    # Check if the item exists
+    item = ItemListing.query.filter_by(id=item_id).first()
+    if not item:
+        return make_response(jsonify({"error": "Item not found"}), 404)
+    
+    seller_id = item.user_id
+    
+    # Check if the user is the owner of the item
+    if seller_id == buyer_id:
+        return make_response(jsonify({"error": "You cannot make an offer on your own item"}), 403)
+    
+    # Check if the offer amount is provided
+    offer_amount = request.json.get('offer_amount')
+    if offer_amount is None:
+        return make_response(jsonify({"error": "Offer amount is required"}), 400)
+
+    # Create a new offer
+    offer = ItemOffer(
+        item_id=item_id,
+        seller_id=seller_id,
+        buyer_id=buyer_id,
+        offer_amount=offer_amount
+    )
+    db.session.add(offer)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Offer made successfully"}), 200)
+
+@app.route('/api/user/<int:user_id>/offers-made', methods=['GET'])
+@validate_authentication()
+def get_user_offers(token_data, user_id):
+    buyer_id = token_data['user_id']
+    # Check if the authenticated user is the owner of the profile
+    if buyer_id != user_id:
+        return make_response(jsonify({"error": "You do not have permission to view this user's offers"}), 403)
+    
+
+    # Fetch all offers made by the user
+    offers = ItemOffer.query.filter_by(buyer_id=buyer_id).all()
+    offers_list = []
+
+    for offer in offers:
+        offer_data = offer.serialize()
+        # Fetch the item associated with the offer
+        item = ItemListing.query.filter_by(id=offer.item_id).first()
+        if not item:
+            continue
+        item_data = item.serialize()
+        seller_id = item.user_id
+
+        # Fetch the user who listed the item
+        item_seller = User.query.filter_by(id=seller_id).first()
+        if not item_seller:
+            continue
+        item_seller_data = item_seller.serialize()
+
+        # Add item and seller information to the offer data
+        offer_data["item_title"] = item_data["title"]
+        offer_data["item_price"] = item_data["price"]
+        offer_data["item_picture_data"] = item_data["picture_data"]
+        offer_data["seller_name"] = item_seller_data["name"]
+        offer_data["seller_profile_picture_url"] = item_seller_data["profile_picture_url"]
+
+        # If offer is accepted, add the seller's contact information, otherwise leave it blank
+        offer_data["seller_contact"] = item_seller_data["email"] if offer.status == "Accepted" else ""
+        offers_list.append(offer_data)
+
+        # Also add completion status
+        offer_data["buyer_completed"] = offer.buyer_completed
+        offer_data["seller_completed"] = offer.seller_completed
+
+    return make_response(jsonify(offers_list), 200)
+
+@app.route('/api/user/<int:user_id>/offers-received', methods=['GET'])
+@validate_authentication()
+def get_user_received_offers(token_data, user_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the owner of the profile
+    if auth_user_id != user_id:
+        return make_response(jsonify({"error": "You do not have permission to view this user's offers"}), 403)
+    # Fetch all offers received by the user
+    offers = ItemOffer.query.filter_by(seller_id=user_id).all()
+    offers_list = []
+    for offer in offers:
+        offer_data = offer.serialize()
+        # Fetch the item associated with the offer
+        item = ItemListing.query.filter_by(id=offer.item_id).first()
+        if not item:
+            continue
+        item_data = item.serialize()
+
+        # Fetch the user who made the offer
+        buyer = User.query.filter_by(id=offer.buyer_id).first()
+        if not buyer:
+            continue
+        buyer_data = buyer.serialize()
+
+        # Add item and buyer information to the offer data
+        offer_data["item_title"] = item_data["title"]
+        offer_data["item_price"] = item_data["price"]
+        offer_data["item_picture_data"] = item_data["picture_data"]
+        offer_data["buyer_name"] = buyer_data["name"]
+        offer_data["buyer_profile_picture_url"] = buyer_data["profile_picture_url"]
+
+        # If offer is accepted, add the buyer's contact information, otherwise leave it blank
+        offer_data["buyer_contact"] = buyer_data["email"] if offer.status == "Accepted" else ""
+
+        # Also add completion status
+        offer_data["buyer_completed"] = offer.buyer_completed
+        offer_data["seller_completed"] = offer.seller_completed
+
+        offers_list.append(offer_data)
+    
+    return make_response(jsonify(offers_list), 200)
+
+# Endpoint for seller to accept an offer
+@app.route('/api/offers/<int:offer_id>/accept', methods=['PUT'])
+@validate_authentication()
+def accept_offer(token_data, offer_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the seller of the offer
+    offer = ItemOffer.query.filter_by(id=offer_id, seller_id=auth_user_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found or you do not have permission to accept this offer"}), 403)
+    
+    # Check that the offer is still pending
+    if offer.status != "Pending":
+        return make_response(jsonify({"error": "Offer has already been accepted or declined"}), 400)
+
+    # Update the offer status to accepted
+    offer.status = "Accepted"
+    db.session.commit()
+
+    # Get the contact information of the buyer
+    buyer = User.query.filter_by(id=offer.buyer_id).first()
+    if not buyer:
+        return make_response(jsonify({"error": "Buyer not found"}), 404)
+
+    return make_response(jsonify({"message": "Offer accepted successfully", "buyer_contact": buyer.email}), 200)
+
+# Endpoint for seller to decline an offer
+@app.route('/api/offers/<int:offer_id>/decline', methods=['PUT'])
+@validate_authentication()
+def decline_offer(token_data, offer_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the seller of the offer
+    offer = ItemOffer.query.filter_by(id=offer_id, seller_id=auth_user_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found or you do not have permission to decline this offer"}), 403)
+    
+    # Check that the offer is still pending
+    if offer.status != "Pending":
+        return make_response(jsonify({"error": "Offer has already been accepted or declined"}), 400)
+
+    # Update the offer status to declined
+    offer.status = "Declined"
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Offer declined successfully"}), 200)
+
+# Endpoint for buyer to mark offer as complete
+@app.route('/api/offers/<int:offer_id>/complete-buyer', methods=['PUT'])
+@validate_authentication()
+def complete_offer_buyer(token_data, offer_id):
+    user_id = token_data['user_id']
+    # must be the buyer
+    offer = ItemOffer.query.filter_by(id=offer_id, buyer_id=user_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found or you are not the buyer"}), 403)
+
+    if offer.buyer_completed:
+        return make_response(jsonify({"message": "Buyer already marked as complete"}), 400)
+
+    offer.buyer_completed = True
+
+    # if seller already did theirs, finalize
+    if offer.seller_completed:
+        offer.status = "Completed"
+        offer.item.is_available = False
+
+    # for all other offers to this item, set them to "Declined"
+    other_offers = ItemOffer.query.filter_by(item_id=offer.item_id, status="Pending").all()
+    for offer in other_offers:
+        offer.status = "Declined"
+
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Buyer completion recorded"}), 200)
+
+# Endpoint for seller to mark offer as complete
+@app.route('/api/offers/<int:offer_id>/complete-seller', methods=['PUT'])
+@validate_authentication()
+def complete_offer_seller(token_data, offer_id):
+    user_id = token_data['user_id']
+    # must be the seller
+    offer = ItemOffer.query.filter_by(id=offer_id, seller_id=user_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found or you are not the seller"}), 403)
+
+    if offer.seller_completed:
+        return make_response(jsonify({"message": "Seller already marked as complete"}), 400)
+
+    offer.seller_completed = True
+
+    # if buyer already did theirs, finalize
+    if offer.buyer_completed:
+        offer.status = "Completed"
+        offer.item.is_available = False
+
+    # for all other offers to this item, set them to "Declined"
+    other_offers = ItemOffer.query.filter_by(item_id=offer.item_id, status="Pending").all()
+    for offer in other_offers:
+        offer.status = "Declined"
+
+    db.session.commit()
+    return make_response(jsonify({"message": "Seller completion recorded"}), 200)
+
+# Endpoint for buyer to cancel pending offer
+@app.route('/api/offers/<int:offer_id>/delete-pending', methods=['DELETE'])
+@validate_authentication()
+def cancel_offer_pending(token_data, offer_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the buyer of the offer
+    offer = ItemOffer.query.filter_by(id=offer_id, buyer_id=auth_user_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found or you do not have permission to decline this offer"}), 403)
+    
+    # Check that the offer is still pending
+    if offer.status != "Pending":
+        return make_response(jsonify({"error": "Offer has already been accepted or declined"}), 400)
+    
+    # Delete the offer
+    db.session.delete(offer)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Offer complete successfully"}), 200)
+
+# Endpoint for buyer/seller to cancel accepted offer
+@app.route('/api/offers/<offer_id>/cancel-accepted', methods=['PUT'])
+@validate_authentication()
+def cancel_offer_accepted(token_data, offer_id):
+    auth_user_id = token_data['user_id']
+    # Check if the authenticated user is the buyer or seller of the offer
+    offer = ItemOffer.query.filter_by(id=offer_id).first()
+    if not offer:
+        return make_response(jsonify({"error": "Offer not found"}), 404)
+
+    if offer.seller_id != auth_user_id and offer.buyer_id != auth_user_id:
+        return make_response(jsonify({"error": "You do not have permission to cancel this offer"}), 403)
+
+    # Set the offer status to "Cancelled"
+    offer.status = "Cancelled"
+
+    # Reset the completion status
+    offer.buyer_completed = False
+    offer.seller_completed = False
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Offer cancelled successfully"}), 200)
+
 
 @app.route('/api/forum/posts', methods=['GET'])
 def get_forum_posts():
@@ -751,8 +1090,5 @@ def create_comment(token_data, post_id):
 
 
 if __name__ == '__main__':
-    # if os.getenv('FLASK_ENV') == 'development':
-    #     init_database()
-    if not os.path.exists('database.db'):
-        init_database()
+    init_database()
     app.run(host="localhost", port="5001", debug=True)

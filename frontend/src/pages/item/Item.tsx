@@ -7,6 +7,17 @@ import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useAuth } from "@/context/UserContext";
 import { Loader2 } from "lucide-react";
+import {
+	Dialog,
+	DialogTrigger,
+	DialogContent,
+	DialogHeader,
+	DialogFooter,
+	DialogTitle,
+	DialogDescription,
+} from "@/components/ui/dialog";
+import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 export default function Item() {
 	// Setting up state variables
@@ -19,6 +30,9 @@ export default function Item() {
 	const [likeCount, setLikeCount] = React.useState(0);
 	const [isOwner, setIsOwner] = React.useState(false);
 	const [deleteLoading, setDeleteLoading] = React.useState(false);
+	const [offerAmount, setOfferAmount] = React.useState<string>("");
+	const [offerError, setOfferError] = React.useState<string>("");
+	const [offerLoading, setOfferLoading] = React.useState(false);
 
 	// Getting auth context
 	const userAuth = useAuth();
@@ -29,6 +43,9 @@ export default function Item() {
 		return <div>Invalid Route</div>;
 	}
 	const itemId = parseInt(params.itemId);
+
+	// navigate
+	const navigate = useNavigate();
 
 	// Fetching item data
 	useEffect(() => {
@@ -47,6 +64,7 @@ export default function Item() {
 				console.error("Error fetching item:", error);
 			}
 		};
+
 		setLoading(true);
 		fetchItem();
 		setLoading(false);
@@ -101,6 +119,56 @@ export default function Item() {
 		}
 	};
 
+	const handleMakeOffer = async () => {
+		if (!validateOffer()) {
+			setOfferAmount("");
+			return;
+		}
+		try {
+			setOfferLoading(true);
+			const res = await fetch(`/api/store-items/${itemId}/offer`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ offer_amount: parseFloat(offerAmount) }),
+			});
+			if (!res.ok) throw new Error(res.statusText);
+			navigate(`/offers-made`);
+		} catch (err) {
+			console.error(err);
+			setOfferError("Failed to submit offer. Please try again.");
+			setOfferAmount("");
+		} finally {
+			setOfferLoading(false);
+		}
+	};
+
+	// Validate offer before sending
+	const validateOffer = (): boolean => {
+		if (!storeItem) return false;
+		const regex = /^\d+\.\d{2}$/;
+		if (!regex.test(offerAmount)) {
+			setOfferError(
+				"Offer must be a positive number with exactly two decimal places."
+			);
+			return false;
+		}
+		const amount = parseFloat(offerAmount);
+		if (amount <= 0) {
+			setOfferError("Offer must be greater than $0.00.");
+			return false;
+		}
+		if (amount > storeItem.price) {
+			setOfferError(
+				`Offer must be at most the listing price of $${storeItem.price.toFixed(
+					2
+				)}.`
+			);
+			return false;
+		}
+		setOfferError("");
+		return true;
+	};
+
 	const imageDataUrl = `data:image/jpeg;base64,${storeItem?.picture_data}`;
 
 	if (loading) {
@@ -139,6 +207,7 @@ export default function Item() {
 							<Link to={`/profile/${storeItem.user_id}`} className="underline">
 								{storeItem.user_name}
 							</Link>
+							{isOwner && <span className="font-bold ml-2">(You)</span>}
 						</h2>
 						<p className="text-gray-700 mb-4 text-xl">
 							{storeItem.description}
@@ -182,26 +251,100 @@ export default function Item() {
 							<span className="text-gray-700">{storeItem.color}</span>
 						</div>
 						<div className="mt-auto">
-							{isOwner ? (
-								<Button
-									size="lg"
-									variant="destructive"
-									className="w-full mb-4 bg-red-500 text-white hover:bg-red-600"
-									onClick={() => handleDeleteItem(storeItem.id)}
-									disabled={deleteLoading}
-								>
-									{deleteLoading && <Loader2 className="animate-spin" />}
-									{deleteLoading ? "Deleting..." : "Delete Item"}
-								</Button>
-							) : (
-								<Button
-									size="lg"
-									variant="secondary"
-									className="w-full mb-4 bg-blue-500 text-white hover:bg-blue-600"
-								>
-									Contact Seller
-								</Button>
-							)}
+							<div className="mt-auto">
+								{!storeItem.is_available ? (
+									<Button
+										size="sm"
+										className="w-full mb-4 border-2 border-black"
+										disabled={storeItem.current_user_made_offer}
+										variant={"default"}
+									>
+										Item Sold
+									</Button>
+								) : isOwner ? (
+									// If the user is the owner, show the delete button + dialog popup
+									<Dialog>
+										<DialogTrigger asChild>
+											<Button
+												variant="destructive"
+												size="lg"
+												className="w-full mb-4"
+											>
+												Delete Item
+											</Button>
+										</DialogTrigger>
+										<DialogContent>
+											<DialogHeader>
+												<DialogTitle>Confirm Deletion</DialogTitle>
+												<DialogDescription>
+													Are you sure you want to delete this item? This action
+													cannot be undone.
+												</DialogDescription>
+											</DialogHeader>
+											<DialogFooter>
+												<Button
+													variant="destructive"
+													onClick={() => handleDeleteItem(storeItem!.id)}
+													disabled={deleteLoading}
+												>
+													{deleteLoading && (
+														<Loader2 className="animate-spin" />
+													)}
+													{deleteLoading ? "Deleting..." : "Confirm Delete"}
+												</Button>
+											</DialogFooter>
+										</DialogContent>
+									</Dialog>
+								) : (
+									// If the user is not the owner, show the make offer button + dialog popup
+									// Also check if the user has already made an offer
+									<Dialog>
+										<DialogTrigger asChild>
+											<Button
+												size="sm"
+												className="w-full mb-4 border-2 border-black"
+												disabled={storeItem.current_user_made_offer}
+												variant={
+													storeItem.current_user_made_offer
+														? "default"
+														: "outline"
+												}
+											>
+												{storeItem.current_user_made_offer
+													? "Existing Offer Pending"
+													: "Make Offer"}
+											</Button>
+										</DialogTrigger>
+										<DialogContent>
+											<DialogHeader>
+												<DialogTitle>Make Offer</DialogTitle>
+												<DialogDescription>
+													Enter your offer below:
+												</DialogDescription>
+											</DialogHeader>
+											<Input
+												type="text"
+												placeholder="e.g. 19.99"
+												value={offerAmount}
+												onChange={(e) => setOfferAmount(e.target.value)}
+												className="w-full mb-2"
+											/>
+											{offerError && (
+												<p className="text-red-500 mb-2">{offerError}</p>
+											)}
+											<DialogFooter>
+												<Button
+													onClick={handleMakeOffer}
+													disabled={offerAmount === "" || offerLoading}
+												>
+													{offerLoading && <Loader2 className="animate-spin" />}
+													Submit Offer
+												</Button>
+											</DialogFooter>
+										</DialogContent>
+									</Dialog>
+								)}
+							</div>
 						</div>
 					</div>
 				</div>

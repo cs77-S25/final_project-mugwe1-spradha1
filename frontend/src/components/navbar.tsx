@@ -39,6 +39,12 @@ const AvatarDropdown = () => {
 						<DropdownMenuItem>List Store Item</DropdownMenuItem>
 					</Link>
 					<DropdownMenuItem>Create Forum Post</DropdownMenuItem>
+					<Link to="/offers-made">
+						<DropdownMenuItem>Offers Made</DropdownMenuItem>
+					</Link>
+					<Link to="/offers-received">
+						<DropdownMenuItem>Offers Received</DropdownMenuItem>
+					</Link>
 					<DropdownMenuItem
 						onClick={() => {
 							userAuth.logout();
