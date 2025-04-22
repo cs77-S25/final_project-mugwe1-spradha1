@@ -2,8 +2,8 @@ services:
   swycle:
     image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:latest
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ./frontend
+      dockerfile: ./backend/Dockerfile
     #environment:
     env_file:
       - .env
@@ -23,8 +23,8 @@ services:
   swycle-backend:
     image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:latest
     build:
-      context: .
-      dockerfile: ./Dockerfile-Backend
+      context: ./backend
+      dockerfile: ./backend/Dockerfile
     #environment:
     env_file:
       - .env
