@@ -20,26 +20,23 @@ services:
       - internal
       - traefik
 
-  swycle-backend:
-    image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle-backend:latest
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    #environment:
-    env_file:
-      - .env
-    deploy:
-      labels:
-        - "traefik.enable=true"
-        - "traefik.docker.network=traefik"
-        - "traefik.http.routers.swycle.entrypoints=https"
-        - "traefik.http.routers.swycle.rule=Host(`swycle.sccs.swarthmore.edu`) && PathPrefix(`/api`)"
-        - "traefik.http.routers.swycle.tls=true"
-        - "traefik.http.routers.swycle.tls.certresolver=letsEncrypt"
-        - "traefik.http.services.swycle.loadbalancer.server.port=5001"
-    networks:
-      - internal
-      - traefik
+  # swycle-backend:
+  #   image: registry.sccs.swarthmore.edu/cs77-s25/swycle-backend:latest
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - .env
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.swycle-backend.entrypoints=https"
+  #     - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`) && PathPrefix(`/api`)"
+  #     - "traefik.http.routers.swycle-backend.tls=true"
+  #     - "traefik.http.routers.swycle-backend.tls.certresolver=letsEncrypt"
+  #     - "traefik.http.services.swycle-backend.loadbalancer.server.port=5000"
+  #   networks:
+  #     - internal
+  #     - traefik
 
 networks:
   internal:
