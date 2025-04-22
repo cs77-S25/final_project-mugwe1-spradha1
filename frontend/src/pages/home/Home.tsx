@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useGoogleLogin, CredentialResponse } from "@react-oauth/google";
 import { useAuth } from "@/context/UserContext";
 import { Loader2 } from "lucide-react";
 import LoginButton from "@/components/loginButton";
@@ -96,16 +95,16 @@ export default function Home() {
           <div className="max-w-2xl mx-auto space-y-4">
             {[
               {
-                q: "How long is the white paper?",
-                a: "It’s 25 pages of comprehensive strategies and case studies.",
+                q: "What is Swycle and who is it for??",
+                a: "Swycle is a campus-grown platform designed for Swarthmore students who care about fashion and the planet. Whether you are looking to thrift, declutter, or connect with others passionate about sustainable style, Swycle gives you the tools to buy, sell, and chat, all in one place.",
               },
               {
-                q: "Is it really free?",
-                a: "Yes! No cost, no credit card required.",
+                q: "How do I list an item for sale?",
+                a: "It’s easy! After signing in with your Swarthmore account, go to the Store section, click “Add Item,” upload a photo, add details like price and size, and post. Your item will be visible instantly for other students to discover and purchase.",
               },
               {
-                q: "Can I share it with my team?",
-                a: "Absolutely—feel free to circulate it.",
+                q: "Is Swycle free to use?",
+                a: "Yes! Completely! Swycle is a student built platform made for peer-to-peer exchanges and open conversation. There are no fees to join, post, or buy. You don't need to worry about shipping as well. All within the community, remember?",
               },
             ].map((faq, i) => (
               <details

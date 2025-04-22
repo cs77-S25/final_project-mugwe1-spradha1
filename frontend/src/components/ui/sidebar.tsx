@@ -1,6 +1,5 @@
 import React, { useState, Children, cloneElement, isValidElement } from "react";
 import { ChevronRight, ChevronLeft } from "lucide-react";
-import { on } from "events";
 interface SidebarProps {
 	children: React.ReactNode;
 	className?: string;
