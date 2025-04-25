@@ -22,6 +22,20 @@ export default function Home() {
 		);
 	}
 
+	useEffect(() => {
+		const fetchHello = async () => {
+			const response = await fetch("/api/hello");
+			if (!response.ok) {
+				throw new Error("Network response was not ok");
+			}
+			const data = await response.json();
+			console.log(data);
+		};
+		fetchHello().catch((error) => {
+			console.error("Error fetching hello:", error);
+		});
+	}, []);
+
 	return (
 		<main className="min-h-screen bg-white text-gray-800">
 			{/* First section */}

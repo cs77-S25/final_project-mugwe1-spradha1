@@ -33,7 +33,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.swycle-backend.entrypoints=https"
-      - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`"
+      - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`)"
       - "traefik.http.routers.swycle-backend.tls=true"
       - "traefik.http.routers.swycle-backend.tls.certresolver=letsEncrypt"
       - "traefik.http.services.swycle-backend.loadbalancer.server.port=5001"
