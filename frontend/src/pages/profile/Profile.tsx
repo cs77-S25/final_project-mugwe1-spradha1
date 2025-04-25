@@ -19,7 +19,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-	CategoryType,
 	categoryColors,
 	defaultColors,
 	ForumPost,
