@@ -4,7 +4,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    #environment:
+    environment:
+      NODE_ENV: production
+      DOMAIN: https://swycle.sccs.swarthmore.edu/
     env_file:
       - .env
     deploy:
@@ -19,6 +21,7 @@ services:
     networks:
       - internal
       - traefik
+    command: sh -c "sleep 5 && npm start"
 
   swycle-backend:
     image: registry.sccs.swarthmore.edu/cs77-s25/swycle-backend:latest
