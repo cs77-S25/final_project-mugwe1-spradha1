@@ -14,7 +14,7 @@ services:
         - "traefik.enable=true"
         - "traefik.docker.network=traefik"
         - "traefik.http.routers.swycle.entrypoints=https"
-        - "traefik.http.routers.swycle.rule=Host(`swycle.sccs.swarthmore.edu`) && PathPrefix(`/`) && !PathPrefix(`/api`)"
+        - "traefik.http.routers.swycle.rule=Host(`swycle.sccs.swarthmore.edu`)"
         - "traefik.http.routers.swycle.tls=true"
         - "traefik.http.routers.swycle.tls.certresolver=letsEncrypt"
         - "traefik.http.services.swycle.loadbalancer.server.port=5173"
