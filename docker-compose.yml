@@ -24,7 +24,7 @@ services:
     command: sh -c "sleep 5 && npm run preview -- --host --port 5173"
 
   swycle-backend:
-    image: registry.sccs.swarthmore.edu/cs77-s25/swycle-backend:latest
+    image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:latest
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -33,7 +33,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.swycle-backend.entrypoints=https"
-      - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`"
       - "traefik.http.routers.swycle-backend.tls=true"
       - "traefik.http.routers.swycle-backend.tls.certresolver=letsEncrypt"
       - "traefik.http.services.swycle-backend.loadbalancer.server.port=5001"

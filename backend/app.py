@@ -1142,6 +1142,10 @@ def delete_forum_post(token_data, forum_id):
 
     return make_response(jsonify({"message": "Forum post deleted successfully"}), 200)
 
+@app.route('/api/hello', methods=['GET'])
+def hello():
+    return jsonify({"message": "Hello, World!"}), 200
+
 
 if __name__ == '__main__':
     init_database()
