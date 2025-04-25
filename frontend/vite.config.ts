@@ -26,12 +26,12 @@ export default defineConfig({
 
 	preview: {
 		// Preview server for production build
-		allowedHosts: ["swycle.sccs.swarthmore.edu"],
+		// allowedHosts: ["swycle.sccs.swarthmore.edu"],
 		proxy: {
 			"/api": {
-				target: "http://swycle-backend:5001",
+				target: "https://swycle-backend:5001",
 				changeOrigin: true,
-				secure: false,
+				secure: true,
 			},
 		},
 	},
