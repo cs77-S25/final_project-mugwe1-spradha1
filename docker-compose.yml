@@ -15,7 +15,7 @@ services:
         - "traefik.http.routers.swycle.rule=Host(`swycle.sccs.swarthmore.edu`)"
         - "traefik.http.routers.swycle.tls=true"
         - "traefik.http.routers.swycle.tls.certresolver=letsEncrypt"
-        - "traefik.http.services.swycle.loadbalancer.server.port=5000"
+        - "traefik.http.services.swycle.loadbalancer.server.port=3000"
     networks:
       - internal
       - traefik
@@ -33,7 +33,7 @@ services:
       - "traefik.http.routers.swycle-backend.rule=Host(`swycle.sccs.swarthmore.edu`) && PathPrefix(`/api`)"
       - "traefik.http.routers.swycle-backend.tls=true"
       - "traefik.http.routers.swycle-backend.tls.certresolver=letsEncrypt"
-      - "traefik.http.services.swycle-backend.loadbalancer.server.port=5000"
+      - "traefik.http.services.swycle-backend.loadbalancer.server.port=5001"
     networks:
       - internal
       - traefik
