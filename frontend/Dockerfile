@@ -11,5 +11,5 @@ RUN npm run build
 ENV NODE_ENV=production
 RUN npm prune --production
 
-EXPOSE 3000
+EXPOSE 5173
 CMD ["npm", "start"]
