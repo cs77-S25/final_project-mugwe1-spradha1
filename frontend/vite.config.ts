@@ -29,9 +29,9 @@ export default defineConfig({
 		// allowedHosts: ["swycle.sccs.swarthmore.edu"],
 		proxy: {
 			"/api": {
-				target: "https://swycle-backend:5001",
+				target: "http://swycle_swycle-backend:5001",
 				changeOrigin: true,
-				secure: true,
+				secure: false,
 			},
 		},
 	},
