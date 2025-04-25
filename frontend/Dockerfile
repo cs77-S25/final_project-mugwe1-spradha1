@@ -8,4 +8,4 @@ RUN chown -R node /usr/src/app
 USER node
 RUN npm install
 RUN npm run build
-CMD ["npm", "start"]
+CMD ["npm", "run", "preview", "--", "--host", "--port", "5173"]
