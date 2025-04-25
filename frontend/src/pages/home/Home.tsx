@@ -14,14 +14,6 @@ export default function Home() {
 		}
 	}, [userAuth.user, navigate]);
 
-	if (userAuth.user) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Loader2 className="animate-spin" size={48} />
-			</div>
-		);
-	}
-
 	useEffect(() => {
 		const fetchHello = async () => {
 			const response = await fetch("/api/hello");
@@ -35,6 +27,14 @@ export default function Home() {
 			console.error("Error fetching hello:", error);
 		});
 	}, []);
+
+	if (userAuth.user) {
+		return (
+			<div className="flex items-center justify-center min-h-screen">
+				<Loader2 className="animate-spin" size={48} />
+			</div>
+		);
+	}
 
 	return (
 		<main className="min-h-screen bg-white text-gray-800">
@@ -66,7 +66,7 @@ export default function Home() {
 			<section className="py-16">
 				<div className="container mx-auto px-6 md:px-12">
 					<h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
-						Your All-in-One Fashion Platform
+						Your All-in-One Fashion Platform (TEST!)
 					</h2>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
 						{[

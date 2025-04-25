@@ -1,6 +1,6 @@
 services:
   swycle:
-    image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:frontend
+    image: registry.sccs.swarthmore.edu/cs77-s25/swycle/swycle:latest
     build:
       context: ./frontend
       dockerfile: Dockerfile

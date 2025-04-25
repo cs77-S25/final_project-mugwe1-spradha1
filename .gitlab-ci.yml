@@ -18,7 +18,7 @@ build:
   script:
     # Hard code to account for the frontend and backend build
     - docker compose -f docker-compose.yml build swycle swycle-backend
-    - docker push $SCCS_REGISTRY/cs77-s25/swycle/swycle:frontend
+    - docker push $SCCS_REGISTRY/cs77-s25/swycle/swycle:latest
     - docker push $SCCS_REGISTRY/cs77-s25/swycle/swycle:backend
 deploy_docker_stage:
   stage: deploy

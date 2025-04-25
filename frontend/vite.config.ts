@@ -11,21 +11,27 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+
 	server: {
-		// add this line to allow ngrok to connect to the frontend
-		allowedHosts: [
-			"bc6c-130-58-166-241.ngrok-free.app",
-			"ce0d-130-58-164-147.ngrok-free.app",
-			"swycle.sccs.swarthmore.edu",
-		],
-		// Proxity is necessary due to CORS issues with local dev
-		// In theory, this should allow ngrok to hit the backend server as well
+		// Dev proxy server for local development
+		allowedHosts: ["swycle.sccs.swarthmore.edu"],
 		proxy: {
 			"/api": {
 				target: "http://localhost:5001",
 				changeOrigin: true,
 				secure: false,
-				//rewrite: (path) => path.replace(/^\/api/, ""),
+			},
+		},
+	},
+
+	preview: {
+		// Preview server for production build
+		allowedHosts: ["swycle.sccs.swarthmore.edu"],
+		proxy: {
+			"/api": {
+				target: "http://swycle-backend:5001",
+				changeOrigin: true,
+				secure: false,
 			},
 		},
 	},
