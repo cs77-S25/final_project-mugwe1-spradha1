@@ -24,7 +24,6 @@ CORS(
     app,
     supports_credentials=True,
     resources={
-        # apply only to API routes—adjust the pattern if needed
         r"/api/*": {
             "origins": ["http://localhost:5173", "https://swycle.sccs.swarthmore.edu"],
         }
@@ -1158,4 +1157,4 @@ def hello():
 
 if __name__ == '__main__':
     init_database()
-    app.run(host="localhost", port="5001", debug=True)
+    app.run(host="0.0.0.0", port="5001", debug=True)
