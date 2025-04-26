@@ -8,7 +8,6 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 import jwt
 from functools import wraps
-import base64
 
 
 app = Flask(__name__)
@@ -20,7 +19,17 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Enable CORS
-CORS(app, supports_credentials=True, origins= "http://localhost:5173")
+
+CORS(
+    app,
+    supports_credentials=True,
+    resources={
+        # apply only to API routes—adjust the pattern if needed
+        r"/api/*": {
+            "origins": ["http://localhost:5173", "https://swycle.sccs.swarthmore.edu"],
+        }
+    }
+)
 
 mock_users = [
     {

@@ -28,6 +28,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    environment:
+      CORS_ORIGIN: https://swycle.sccs.swarthmore.edu
     env_file:
       - .env
     labels:
