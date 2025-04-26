@@ -7,7 +7,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
 	plugins: [react(), tailwindcss()],
 	define: {
-		VITE_GOOGLE_CLIENT_ID: process.env.VITE_GOOGLE_CLIENT_ID,
+		VITE_GOOGLE_CLIENT_ID: JSON.stringify(process.env.VITE_GOOGLE_CLIENT_ID),
 	},
 	resolve: {
 		alias: {
