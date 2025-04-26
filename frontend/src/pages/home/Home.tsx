@@ -1,18 +1,9 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/UserContext";
-import { Loader2 } from "lucide-react";
 import LoginButton from "@/components/loginButton";
 
 export default function Home() {
 	const userAuth = useAuth();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		if (userAuth.user) {
-			navigate("profile/" + userAuth.user.id);
-		}
-	}, [userAuth.user, navigate]);
 
 	useEffect(() => {
 		const fetchHello = async () => {
@@ -27,14 +18,6 @@ export default function Home() {
 			console.error("Error fetching hello:", error);
 		});
 	}, []);
-
-	if (userAuth.user) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Loader2 className="animate-spin" size={48} />
-			</div>
-		);
-	}
 
 	return (
 		<main className="min-h-screen bg-white text-gray-800">
