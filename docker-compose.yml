@@ -4,6 +4,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
     environment:
       NODE_ENV: production
       DOMAIN: https://swycle.sccs.swarthmore.edu/
