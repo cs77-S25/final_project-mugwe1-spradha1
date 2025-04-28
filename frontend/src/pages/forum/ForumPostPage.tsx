@@ -106,7 +106,7 @@ export default function ForumPostPage() {
 			body: JSON.stringify({ content: newCommentContent }),
 		});
 		if (!res.ok) {
-			console.error("Counld not save comment");
+			console.error("Could not save comment");
 			return;
 		}
 		const saved: ForumComment = await res.json();
@@ -194,7 +194,7 @@ export default function ForumPostPage() {
 			</article>
 
 			{/* Comments Section */}
-			<section className="mt-8">
+			<section className="mt-8 max-w-5xl">
 				<h2 className="text-2xl font-bold mb-4">Comments</h2>
 
 				{/* Add Comment Form */}
@@ -215,11 +215,11 @@ export default function ForumPostPage() {
 				</div>
 
 				{/* List of Comments */}
-				<div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+				<div className="space-y-4 max-h-96 w-full overflow-y-auto pr-5">
 					{comments.map((comment) => (
 						<div
 							key={comment.id}
-							className="p-6 border rounded bg-gray-50 rounded shadow dark:bg-black dark:ring-1 dark:ring-gray-500 dark:ring-inset"
+							className="p-6 border rounded bg-gray-50 rounded shadow dark:bg-black dark:ring-1 dark:ring-gray-500 dark:ring-inset break-words w-full"
 						>
 							<div className="text-sm text-gray-600 dark:text-gray-400 dark:font-bold">
 								{comment.commenter_name} on{" "}
