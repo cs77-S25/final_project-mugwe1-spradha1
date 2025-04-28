@@ -1,26 +1,23 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/UserContext";
-import { Loader2 } from "lucide-react";
 import LoginButton from "@/components/loginButton";
 
 export default function Home() {
 	const userAuth = useAuth();
-	const navigate = useNavigate();
 
 	useEffect(() => {
-		if (userAuth.user) {
-			navigate("profile/" + userAuth.user.id);
-		}
-	}, [userAuth.user, navigate]);
-
-	if (userAuth.user) {
-		return (
-			<div className="flex items-center justify-center min-h-screen">
-				<Loader2 className="animate-spin" size={48} />
-			</div>
-		);
-	}
+		const fetchHello = async () => {
+			const response = await fetch("/api/hello");
+			if (!response.ok) {
+				throw new Error("Network response was not ok");
+			}
+			const data = await response.json();
+			console.log(data);
+		};
+		fetchHello().catch((error) => {
+			console.error("Error fetching hello:", error);
+		});
+	}, []);
 
 	return (
 		<main className="min-h-screen bg-white text-gray-800">

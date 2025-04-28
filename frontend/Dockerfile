@@ -1,15 +1,14 @@
 FROM node:lts-bullseye
 
 WORKDIR /usr/src/app
-COPY package*.json ./
-
-RUN npm install
-
 COPY . .
+EXPOSE 5173
+
+ARG VITE_GOOGLE_CLIENT_ID
+ENV VITE_GOOGLE_CLIENT_ID=$VITE_GOOGLE_CLIENT_ID
+
+RUN chown -R node /usr/src/app
+USER node
+RUN npm install
 RUN npm run build
-
-ENV NODE_ENV=production
-RUN npm prune --production
-
-EXPOSE 3000
-CMD ["npm", "start"]
+CMD ["npm", "run", "preview", "--", "--host", "--port", "5173"]

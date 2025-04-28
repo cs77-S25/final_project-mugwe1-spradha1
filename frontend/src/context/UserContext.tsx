@@ -9,7 +9,7 @@ import { User } from "@/types/User";
 
 export type UserAuthType = {
 	user: User | null;
-	login: (googleToken?: string) => Promise<void>;
+	login: (googleToken?: string) => Promise<User | null>;
 	logout: () => Promise<void>;
 	isLoading: boolean;
 };
@@ -17,8 +17,8 @@ export type UserAuthType = {
 // Context for user authentication
 const UserContext = createContext<UserAuthType>({
 	user: null,
-	login: async () => {},
-	logout: async () => {},
+	login: async () => Promise.resolve(null),
+	logout: async () => Promise.resolve(),
 	isLoading: true,
 });
 
@@ -28,13 +28,14 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
 	// helper to call /me and update state
 	const fetchMe = useCallback(async () => {
+		let me: User | null = null;
 		try {
 			const res = await fetch(`/api/me`, {
 				credentials: "include",
 			});
 			if (res.ok) {
 				const json = await res.json();
-				const me: User = json["user_data"];
+				me = json["user_data"];
 				setUser(me);
 				console.log("UserContext: fetched user", me);
 			} else {
@@ -44,10 +45,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 			setUser(null);
 		} finally {
 			setIsLoading(false);
+			return me;
 		}
 	}, []);
 
 	const login = async (googleToken?: string) => {
+		let authUserData: User | null = null;
 		try {
 			// hit /login to set the cookie
 			const res = await fetch(`/api/login`, {
@@ -60,12 +63,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 				const err = await res.json();
 				throw new Error(err.error || "Login failed");
 			}
-
-			// 2) fetch user data from /me
-			await fetchMe();
+			// fetch user data from /me
+			authUserData = await fetchMe();
 		} catch (e) {
 			console.error("Login error:", e);
 			throw e;
+		} finally {
+			return authUserData;
 		}
 	};
 

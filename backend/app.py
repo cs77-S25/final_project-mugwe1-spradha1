@@ -8,7 +8,6 @@ from google.auth.transport import requests
 from google.oauth2 import id_token
 import jwt
 from functools import wraps
-import base64
 
 
 app = Flask(__name__)
@@ -20,7 +19,16 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Enable CORS
-CORS(app, supports_credentials=True, origins= "http://localhost:5173")
+
+CORS(
+    app,
+    supports_credentials=True,
+    resources={
+        r"/api/*": {
+            "origins": ["http://localhost:5173", "https://swycle.sccs.swarthmore.edu"],
+        }
+    }
+)
 
 mock_users = [
     {
@@ -1142,7 +1150,11 @@ def delete_forum_post(token_data, forum_id):
 
     return make_response(jsonify({"message": "Forum post deleted successfully"}), 200)
 
+@app.route('/api/hello', methods=['GET'])
+def hello():
+    return jsonify({"message": "Hello, World!"}), 200
+
 
 if __name__ == '__main__':
     init_database()
-    app.run(host="localhost", port="5001", debug=True)
+    app.run(host="0.0.0.0", port="5001", debug=True)
