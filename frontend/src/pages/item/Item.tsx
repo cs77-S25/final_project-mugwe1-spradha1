@@ -191,15 +191,15 @@ export default function Item() {
 	}
 
 	return (
-		<div className="min-h-screen p-8 bg-gray-50">
+		<div className="min-h-screen p-8 bg-gray-50 dark:bg-black">
 			<div className="max-w-7xl mx-auto">
 				<Link to="/store" className="flex items-center mb-4">
 					<ArrowLeft size={20} className="text-[#A11833] custom-hover-shadow" />
-					<span className="font-bold text-gray-600 ml-2 hover:font-normal">
+					<span className="font-bold text-gray-600 dark:text-white ml-2 hover:font-normal">
 						Back to Store
 					</span>
 				</Link>
-				<div className=" bg-white rounded-lg overflow-hidden border-2 border-black">
+				<div className="bounded-lg overflow-hidden border-2 border-black dark:bg-gray-800 dark:border-gray-700">
 					<div className="flex">
 						{/* Left: Item Image */}
 						<div className="w-1/2">
@@ -228,10 +228,8 @@ export default function Item() {
 									{isOwner && <span className="font-bold text-xl">(You)</span>}
 								</div>
 							</Link>
-							<p className="text-gray-700 mb-4 text-xl">
-								{storeItem.description}
-							</p>
-							<p className="text-2xl font-semibold mb-4">
+							<p className=" mb-4 text-xl">{storeItem.description}</p>
+							<p className="text-2xl font-semibold mb-4 dark:text-orange-100">
 								${storeItem.price.toFixed(2)}
 							</p>
 							<div className="flex items-center mb-4">
@@ -244,30 +242,30 @@ export default function Item() {
 										className="w-full h-full"
 										stroke="currentColor"
 										strokeWidth={2}
-										fill={heart ? "pink" : "none"}
+										fill={heart ? "red" : "none"}
 									/>
 								</button>
-								<span className="ml-2 text-gray-700 text-2xl">{likeCount}</span>
+								<span className="ml-2 text-2xl">{likeCount}</span>
 							</div>
 							<div className="flex items-center mb-4">
-								<span className="text-gray-700 font-bold mr-2">Condition:</span>
-								<span className="text-gray-700">{storeItem.condition}</span>
+								<span className="font-bold mr-2">Condition:</span>
+								<span className="">{storeItem.condition}</span>
 							</div>
 							<div className="flex items-center mb-4">
-								<span className="text-gray-700 font-bold mr-2">Size:</span>
-								<span className="text-gray-700">{storeItem.size}</span>
+								<span className=" font-bold mr-2">Size:</span>
+								<span className="">{storeItem.size}</span>
 							</div>
 							<div className="flex items-center mb-4">
-								<span className="text-gray-700 font-bold mr-2">Gender:</span>
-								<span className="text-gray-700">{storeItem.gender}</span>
+								<span className=" font-bold mr-2">Gender:</span>
+								<span className="">{storeItem.gender}</span>
 							</div>
 							<div className="flex items-center mb-4">
-								<span className="text-gray-700 font-bold mr-2">Category:</span>
-								<span className="text-gray-700">{storeItem.category}</span>
+								<span className=" font-bold mr-2">Category:</span>
+								<span className="">{storeItem.category}</span>
 							</div>
 							<div className="flex items-center mb-4">
-								<span className="text-gray-700 font-bold mr-2">Color:</span>
-								<span className="text-gray-700">{storeItem.color}</span>
+								<span className=" font-bold mr-2">Color:</span>
+								<span className="">{storeItem.color}</span>
 							</div>
 							<div className="mt-auto">
 								<div className="mt-auto">

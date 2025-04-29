@@ -56,7 +56,7 @@ export function DropdownMenuColors({
 					size="lg"
 					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedColors.length > 0 ? "font-extrabold" : ""
-					} ${selectedColors.length > 0 ? "bg-red-100" : ""}
+					} ${selectedColors.length > 0 ? "bg-red-100 dark:bg-red-400" : ""}
 					`}
 				>
 					Color
@@ -120,7 +120,7 @@ export function DropdownMenuCategory({
 					size="lg"
 					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedCategories.length > 0 ? "font-extrabold" : ""
-					} ${selectedCategories.length > 0 ? "bg-red-100" : ""}
+					} ${selectedCategories.length > 0 ? "bg-red-100 dark:bg-red-400" : ""}
 					`}
 				>
 					Category
@@ -173,7 +173,7 @@ export function DropdownMenuCondition({
 					size="lg"
 					className={`text-base border-1 border-black dark:hover:ring-1 dark:hover:ring-[#DB572C] ${
 						selectedConditions.length > 0 ? "font-extrabold" : ""
-					} ${selectedConditions.length > 0 ? "bg-red-100" : ""}
+					} ${selectedConditions.length > 0 ? "bg-red-100 dark:bg-red-400" : ""}
 					`}
 				>
 					Condition
@@ -224,7 +224,9 @@ export function DropdownMenuGender({
 					variant="outline"
 					size="lg"
 					className={`text-base border-1 border-black ${
-						selectedGenders.length > 0 ? "font-extrabold bg-red-100" : ""
+						selectedGenders.length > 0
+							? "font-extrabold bg-red-100 dark:bg-red-400"
+							: ""
 					}`}
 				>
 					Gender
@@ -317,7 +319,7 @@ export default function Store() {
 							selectedColors={selectedColors}
 							setSelectedColors={setSelectedColors}
 						/>
-						<DropdownMenuCategory 
+						<DropdownMenuCategory
 							selectedCategories={selectedCategories}
 							setSelectedCategories={setSelectedCategories}
 						/>
