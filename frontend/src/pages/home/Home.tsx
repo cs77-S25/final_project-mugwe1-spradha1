@@ -22,12 +22,13 @@ export default function Home() {
 	return (
 		<main className="min-h-screen bg-white text-gray-800">
 			{/* First section */}
-			<section className="bg-gradient-to-r from-[#A11833] to-[#3F030F] py-24">
+			<section className="bg-gradient-to-r from-[#A11833] to-[#3F030F] dark:from-gray-900 dark:to-black py-24">
 				<div className="container mx-auto px-6 md:px-12 text-center">
 					<img
-						src="https://via.placeholder.com/150"
-						alt="Logo Placeholder"
-						className="mx-auto mb-6"
+						src="/src/components/images/swyclesvg.svg"
+						alt="Swycle Logo"
+            width={350}
+						className="mx-auto mb-1"
 					/>
 					<h1 className="text-4xl md:text-6xl font-bold leading-none text-white mb-4">
 						Where Style Meets Sustainability
@@ -46,9 +47,9 @@ export default function Home() {
 			</section>
 
 			{/* Benefits Section */}
-			<section className="py-16">
-				<div className="container mx-auto px-6 md:px-12">
-					<h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+			<section className="py-16 dark:bg-gray-900">
+				<div className="container mx-auto px-6 md:px-12 dark:text-gray-100">
+					<h2 className="text-3xl md:text-4xl font-bold text-center mb-12 dark:text-gray-100">
 						Your All-in-One Fashion Platform
 					</h2>
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -71,11 +72,11 @@ export default function Home() {
 						].map((item, idx) => (
 							<div
 								key={idx}
-								className="text-center p-6 border border-gray-200 rounded-lg hover:shadow-lg transition"
+								className="text-center text-gray-100 p-6 border border-gray-200 rounded-lg hover:shadow-lg transition dark:ring-1 dark:ring-gray-700"
 							>
 								<div className="text-5xl mb-4">{item.icon}</div>
 								<h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-								<p className="text-gray-600">{item.desc}</p>
+								<p className="text-gray-300 dark:text-gray-400">{item.desc}</p>
 							</div>
 						))}
 					</div>
@@ -83,9 +84,9 @@ export default function Home() {
 			</section>
 
 			{/* FAQ Section */}
-			<section className="py-16">
-				<div className="container mx-auto px-6 md:px-12">
-					<h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+			<section className="py-16 dark:bg-gray-900">
+				<div className="container mx-auto px-6 md:px-12 dark:text-gray-100">
+					<h2 className="text-3xl md:text-4xl font-bold text-center mb-12 dark:text-gray-100">
 						Frequently Asked Questions
 					</h2>
 					<div className="max-w-2xl mx-auto space-y-4">
@@ -105,12 +106,12 @@ export default function Home() {
 						].map((faq, i) => (
 							<details
 								key={i}
-								className="border border-gray-200 rounded-lg p-4"
+								className="border border-gray-200 rounded-lg p-4 "
 							>
-								<summary className="font-semibold cursor-pointer">
+								<summary className="font-semibold cursor-pointer ">
 									{faq.q}
 								</summary>
-								<p className="mt-2 text-gray-600">{faq.a}</p>
+								<p className="mt-2 text-gray-600 dark:text-gray-400">{faq.a}</p>
 							</details>
 						))}
 					</div>
@@ -118,7 +119,7 @@ export default function Home() {
 			</section>
 
 			{/* Footer */}
-			<footer className="bg-gradient-to-r from-[#A11833] to-[#3F030F] py-8">
+			<footer className="bg-gradient-to-r from-[#A11833] to-[#3F030F] dark:from-gray-900 dark:to-black py-8">
 				<div className="container text-white font-bold mx-auto px-6 md:px-12 text-center">
 					<p>© {new Date().getFullYear()} Swycle.</p>
 				</div>

@@ -62,7 +62,7 @@ export default function ForumContent() {
 	});
 
 	return (
-		<div className="flex h-screen">
+		<div className="flex">
 			{/* Sidebar area */}
 			<Sidebar>
 				<FormSidebar
