@@ -73,11 +73,11 @@ export default function Home() {
 						].map((item, idx) => (
 							<div
 								key={idx}
-								className="text-center text-gray-100 p-6 border border-gray-200 rounded-lg hover:shadow-lg transition dark:ring-1 dark:ring-gray-700"
+								className="text-center dark:text-gray-100 p-6 border border-gray-200 rounded-lg hover:shadow-lg transition dark:ring-1 dark:ring-gray-700"
 							>
 								<div className="text-5xl mb-4">{item.icon}</div>
 								<h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-								<p className="text-gray-300 dark:text-gray-400">{item.desc}</p>
+								<p className="text-gray-700 dark:text-gray-400">{item.desc}</p>
 							</div>
 						))}
 					</div>
@@ -112,7 +112,7 @@ export default function Home() {
 								<summary className="font-semibold cursor-pointer ">
 									{faq.q}
 								</summary>
-								<p className="mt-2 text-gray-600 dark:text-gray-400">{faq.a}</p>
+								<p className="mt-2 dark:text-gray-400">{faq.a}</p>
 							</details>
 						))}
 					</div>
