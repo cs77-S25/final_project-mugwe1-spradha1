@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/context/UserContext";
 import LoginButton from "@/components/loginButton";
+import Logo from '@/components/images/swyclewvg.svg';
 
 export default function Home() {
 	const userAuth = useAuth();
@@ -25,7 +26,7 @@ export default function Home() {
 			<section className="bg-gradient-to-r from-[#A11833] to-[#3F030F] dark:from-gray-900 dark:to-black py-24">
 				<div className="container mx-auto px-6 md:px-12 text-center">
 					<img
-						src="/src/components/images/swyclesvg.svg"
+						src={Logo}
 						alt="Swycle Logo"
             width={350}
 						className="mx-auto mb-1"

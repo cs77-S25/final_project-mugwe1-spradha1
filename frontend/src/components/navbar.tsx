@@ -13,6 +13,7 @@ import { useAuth } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
+import Logo from '@/components/images/swyclewvg.svg';
 
 const AvatarDropdown = () => {
 	const userAuth = useAuth();
@@ -63,7 +64,7 @@ export default function Navbar() {
 		<nav className="flex justify-between items-center bg-[#A11833] p-4 z-20 sticky top-0 dark:bg-gray-800">
 			<div className="text-xl font-bold text-white">
 				<Link to="/"><img
-					src="/src/components/images/swyclesvg.svg"
+					src={Logo}
 					alt="Swycle Logo"
             		width={30}/></Link>
 			</div>
