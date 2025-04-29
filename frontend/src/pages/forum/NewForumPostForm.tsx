@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { CategoryType, categoryColors } from "./ForumConstants";
 
 interface NewPostFormProps {
@@ -13,6 +14,7 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
   const [photo, setPhoto] = useState<File | null>(null); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
 
   const availableCategories = Object.keys(categoryColors) as CategoryType[];
@@ -48,8 +50,10 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
         const errorData = await response.json().catch(() => ({ message: 'Failed to create post' }));
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
+      const newPost = await response.json();
 
       onPostCreated(); 
+      navigate(`/forum/post/${newPost.id}`);
 
     } catch (err: any) {
       setError(`Error creating post: ${err.message}`);
@@ -64,6 +68,18 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
         onCancel();
     }
   }
+
+  useEffect(() => {
+    const handlePopState = () => {
+      navigate(-1);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [navigate]);
 
   return (
     <div className="fixed inset-0 bg-gray-200 bg-opacity-50 flex items-center justify-center z-50 dark:bg-gray-900" onClick={handleOutsideClick}>
@@ -129,9 +145,8 @@ export default function NewPostForm({ onPostCreated, onCancel }: NewPostFormProp
           <div className="flex items-center justify-between">
             <button
               type="submit"
-              className="bg-[#A11833] hover:bg-[#3F030F] text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading}
-            >
+              className="bg-[#A11833] hover:bg-[#3F030F] text-white py-2 px-4 rounded focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed hover:text-[#dbb52c] cursor:pointer transition-all duration-300 ease-in-out"
+              disabled={loading}>
               {loading ? 'Posting...' : 'Create Post'}
             </button>
             <button

@@ -10,6 +10,7 @@ import {
 	ForumPost,
 } from "./ForumConstants";
 import NewPostForm from "./NewForumPostForm";
+import { formatDistanceToNow, format} from 'date-fns';
 
 export default function ForumContent() {
 	const [posts, setPosts] = useState<ForumPost[]>([]);
@@ -77,7 +78,7 @@ export default function ForumContent() {
 				<div className="flex justify-between items-center mb-4">
 					<h1 className="text-5xl font-bold">Forum</h1>
 					<button
-						className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] cursor-pointer dark:bg-gray-700 dark:hover:bg-gray-800 dark:hover:font-bold dark:hover:text-[#DB572C] transition-all duration-600 ease-in-out"
+						className="flex gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] cursor-pointer dark:bg-gray-700 dark:hover:bg-gray-800 hover:text-[#dbb52c] transition-all duration-600 ease-in-out"
 						onClick={() => setShowNewPostForm(true)}
 					>
 						<Plus size={24} className="min-w-[24px]" />
@@ -118,9 +119,9 @@ export default function ForumContent() {
 									<div className="p-6 mb-3 border border-gray-400 rounded shadow-sm bg-gray-50 hover:border-gray-500 hover:bg-gray-200 transition dark:bg-black dark:ring-1 dark:ring-[#DB572C] dark:border-transparent dark:hover:bg-gray-950 dark:hover:ring-white transition-all duration-600 ease-in-out">
 										<h2 className="text-2xl font-bold mb-1">{post.title}</h2>
 										<button className={badgeCls}>{post.category}</button>
-										<div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-											{post.author_name} –{" "}
-											{new Date(post.created_at).toLocaleDateString()}
+										<div className="text-sm text-gray-700 dark:text-gray-400 mb-4">
+											{post.author_name} •{" "}
+											{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}{" "}
 										</div>
 										<p className="text-xl">{post.content}</p>
 									</div>

@@ -79,7 +79,7 @@ class ForumPost(db.Model):
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     #explicit definition of relationships
-    comments = db.relationship('ForumComment', backref='post', lazy=True)
+    comments = db.relationship('ForumComment', backref='post', cascade='all, delete-orphan')
     likes = db.relationship('ForumLike', backref='post', lazy=True)
 
     def __repr__(self) -> str:

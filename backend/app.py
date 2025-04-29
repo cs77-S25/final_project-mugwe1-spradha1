@@ -1143,12 +1143,34 @@ def delete_forum_post(token_data, forum_id):
     post = ForumPost.query.filter_by(id=forum_id, user_id=user_id).first()
     if not post:
         return make_response(jsonify({"error": "Forum post not found or you do not have permission to delete this post"}), 403)
+    
+    #delete the comments associated with the post first
+    ForumComment.query.filter_by(forum_post_id=forum_id).delete()
 
     # Delete the post
     db.session.delete(post)
     db.session.commit()
 
     return make_response(jsonify({"message": "Forum post deleted successfully"}), 200)
+
+
+@app.route('/api/forum/comments/<int:comment_id>', methods=['DELETE'])
+@validate_authentication()
+def delete_forum_comment(token_data, comment_id):
+    user_id = token_data['user_id']
+    # Check if the authenticated user is the owner of the post
+    comment = ForumComment.query.filter_by(id=comment_id, user_id=user_id).first()
+    if not comment:
+        return make_response(jsonify({"error": "Comment not found or you do not have permission to delete this comment"}), 403)
+
+    # Delete the post
+    db.session.delete(comment)
+    db.session.commit()
+
+    return make_response(jsonify({"message": "Forum post deleted successfully"}), 200)
+
+
+
 
 @app.route('/api/hello', methods=['GET'])
 def hello():

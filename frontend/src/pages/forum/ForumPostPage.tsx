@@ -10,6 +10,8 @@ import {
 } from "./ForumConstants";
 import { useAuth } from "@/context/UserContext";
 import { Trash } from "lucide-react";
+import Linkify from 'linkify-react';
+import { formatDistanceToNow, format} from 'date-fns';
 
 export default function ForumPostPage() {
 	const { postId } = useParams<{ postId: string }>();
@@ -45,6 +47,30 @@ export default function ForumPostPage() {
 			setError("Failed to delete post");
 		}
 	};
+	
+	//deleting comment
+
+	const handleDeleteComment = async (commentId: number) => {
+		try {
+			const response = await fetch(`/api/forum/comments/${commentId}`, {
+				method: "DELETE",
+				credentials: "include",
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to delete comment");
+			}
+
+			setComments(comments.filter(comment => comment.id !== commentId));
+		} catch (error) {
+			console.log("Error deleting comment:", error);
+		}
+	};
+
+
+
+
+
 
 	useEffect(() => {
 		const fetchPost = async () => {
@@ -147,28 +173,32 @@ export default function ForumPostPage() {
 					size={20}
 					className="text-[#A11833] custom-hover-shadow dark:text-gray-400 dark:ring-1 dark:ring-[#DB572C]"
 				/>
-				<span className="text-gray-600 ml-2 hover:font-bold dark:text-white">
+				<span className="text-gray-600 ml-2 hover:font-bold dark:text-white transition-all duration-300 ease-in-out">
 					Back to Forum
 				</span>
 			</Link>
-			<article className="bg-gray-50 p-10 rounded shadow dark:bg-black dark:text-white dark:ring-1 dark:ring-[#DB572C]">
+			<article className="bg-gray-50 p-10 rounded shadow dark:bg-black dark:text-white dark:ring-1 dark:ring-[#DB572C] relative">
 				<h1 className="text-3xl font-bold mb-2">{post.title}</h1>
 
 				<button className={categoryButtonClassName}>{post.category}</button>
 
-				<div className="text-sm text-gray-600 mb-4 mt-2 dark:text-gray-500">
+				<div className="text-base font-medium text-gray-800 mb-4 mt-2 dark:text-gray-400">
 					Posted by{" "}
 					<Link to={`/profile/${post.user_id}`} className="underline">
 						{post.author_name}
 					</Link>{" "}
 					{isOwner && <span className="font-bold">(You)</span>}{" "}
 					{/* Show "You" if the user is the owner */}
-					on {new Date(post.created_at).toLocaleDateString()}{" "}
-					{/* Use author_name and format date */}
+					<p className= "text-xs font-normal text-gray-700 dark:text-gray-300">
+					{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}{" "}
+					on {format(new Date(post.created_at), 'MMMM d')}{" "}
+					at {format(new Date(post.created_at), 'h:mm a')}</p>
+					
 				</div>
 
+
 				{post.photo_data && (
-					<div className="mb-4">
+					<div className="mb-4 hover:ring-2 dark:hover:ring-gray-700 transition-all duration-300 ease-in-out">
 						<img
 							src={`data:image/jpeg;base64,${post.photo_data}`}
 							alt="Post photo"
@@ -177,24 +207,28 @@ export default function ForumPostPage() {
 					</div>
 				)}
 
-				<p className="text-gray-800 font-bold dark:text-white dark:font-bold">
-					{post.content}
+				<p className="text-gray-800 text-2xl font-medium dark:text-white">
+					<Linkify options={{ 
+						className: "break-words text-blue-500 hover:underline",
+						target: "blank",
+						rel: "noopener noreferrer",}}>
+						{post.content}
+					</Linkify>
 				</p>
 
 				{isOwner && (
 					// Delete Post Button
 					<button
 						onClick={handleDeletePost}
-						className="flex items-center gap-2 px-4 py-2 bg-[#A11833] text-white rounded hover:bg-[#3F030F] hover:text-white hover:cursor-pointer mt-4"
-					>
+						className="absolute top-12 right-5 flex gap-2 px-2.5 py-2 bg-[#A11833] dark:bg-gray-900 text-white rounded hover:bg-[#3F030F] hover:cursor-pointer hover:text-[#dbb52c] transition-all duration-300 ease-in-out">
 						<Trash size={16} />
-						Delete Post
+					
 					</button>
 				)}
 			</article>
 
 			{/* Comments Section */}
-			<section className="mt-8 max-w-5xl">
+			<section className="mt-8 max-w-3xl">
 				<h2 className="text-2xl font-bold mb-4">Comments</h2>
 
 				{/* Add Comment Form */}
@@ -208,26 +242,43 @@ export default function ForumPostPage() {
 					/>
 					<button
 						onClick={handleAddComment}
-						className="flex gap-2 px-4 py-2 bg-[#A11833] dark:bg-gray-900 text-white rounded hover:bg-[#3F030F] hover:cursor-pointer hover:text-[#DB572C] hover:font-bold"
+						className="flex gap-2 px-4 py-2 bg-[#A11833] dark:bg-gray-900 text-white rounded hover:bg-[#3F030F] hover:cursor-pointer hover:text-[#dbb52c] transition-all duration-300 ease-in-out"
 					>
 						Post Comment
 					</button>
 				</div>
 
 				{/* List of Comments */}
-				<div className="space-y-4 max-h-96 w-full overflow-y-auto pr-5">
+				<div className="space-y-4 w-full">
 					{comments.map((comment) => (
-						<div
-							key={comment.id}
-							className="p-6 border rounded bg-gray-50 rounded shadow dark:bg-black dark:ring-1 dark:ring-gray-500 dark:ring-inset break-words w-full"
-						>
-							<div className="text-sm text-gray-600 dark:text-gray-400 dark:font-bold">
-								{comment.commenter_name} on{" "}
-								{new Date(comment.created_at).toLocaleDateString()}{" "}
-								{/* Use commenter_name and format date */}
+						<div key={comment.id}
+							className="p-6 border rounded bg-gray-50 rounded shadow dark:bg-black dark:ring-1 dark:ring-gray-500 dark:ring-inset break-words w-full hover:ring-1 hover:ring-gray-700 dark:hover:ring-gray-300 transition-all duration-300 ease-in-out mt-5 relative">
+							<div className="text-sm text-gray-600 dark:text-gray-400 dark:font-bold mb-4">
+								<span className="font-medium text-sm dark:text-gray-200">{comment.commenter_name}</span>
+								<p className= "text-xs dark:text-gray-400"><span>{formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}</span>
+								<span> on </span>
+								<span>{format(new Date(comment.created_at), 'MMMM d, yyyy')}</span>
+								<span> at </span>
+								<span>{format(new Date(comment.created_at), 'h:mm a')}</span></p>
 							</div>
-							<p className="text-gray-800 mt-1 dark:text-white">
-								{comment.content}
+
+							{comment.user_id === userId && (
+								<button onClick={() => handleDeleteComment(comment.id)}
+									className="absolute top-7 right-7 text-black hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 cursor-pointer transition-colors"
+									title="Delete comment">
+									<Trash size={16} />
+								</button>
+							)}
+
+
+							<p className="text-black mt-1 dark:text-white text-xl">
+								{/* {comment.content} */}
+								<Linkify options={{ 
+									className: "break-words text-blue-500 hover:underline",
+									target: "blank",
+									rel: "noopener noreferrer",}}>
+									{comment.content}
+								</Linkify>
 							</p>
 						</div>
 					))}

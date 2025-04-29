@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "date-fns": "^4.1.0",
+    "linkify-plugin-mention": "^4.2.0",
+    "linkify-react": "^4.2.0"
+  }
+}
