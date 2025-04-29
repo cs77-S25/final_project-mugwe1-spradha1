@@ -13,7 +13,7 @@ import { useAuth } from "@/context/UserContext";
 import { useNavigate } from "react-router-dom";
 import { getInitials } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
-import Logo from '@/components/images/swyclewvg.svg';
+import Logo from '@/components/images/swyclesvg.svg';
 
 const AvatarDropdown = () => {
 	const userAuth = useAuth();

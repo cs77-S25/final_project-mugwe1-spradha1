@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuth } from "@/context/UserContext";
 import LoginButton from "@/components/loginButton";
-import Logo from '@/components/images/swyclewvg.svg';
+import Logo from '@/components/images/swyclesvg.svg';
 
 export default function Home() {
 	const userAuth = useAuth();
