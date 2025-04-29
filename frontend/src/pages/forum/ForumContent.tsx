@@ -32,7 +32,7 @@ export default function ForumContent() {
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data: ForumPost[] = await res.json();
 			setPosts(
-				[...data, ...data, ...data].sort(
+				data.sort(
 					(a, b) =>
 						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 				)
