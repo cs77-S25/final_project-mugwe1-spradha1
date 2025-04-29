@@ -76,9 +76,6 @@ export default function Profile() {
 	const userAuth = useAuth();
 
 	useEffect(() => {
-		// Scroll to top on page load, workaround for react-router-dom
-		window.scrollTo(0, 0);
-
 		const fetchProfileUser = async () => {
 			try {
 				const response = await fetch(`/api/user/${userId}`);

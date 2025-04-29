@@ -10,7 +10,7 @@ import {
 	ForumPost,
 } from "./ForumConstants";
 import NewPostForm from "./NewForumPostForm";
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from "date-fns";
 
 export default function ForumContent() {
 	const [posts, setPosts] = useState<ForumPost[]>([]);
@@ -32,7 +32,7 @@ export default function ForumContent() {
 			if (!res.ok) throw new Error(`HTTP ${res.status}`);
 			const data: ForumPost[] = await res.json();
 			setPosts(
-				data.sort(
+				[...data, ...data, ...data].sort(
 					(a, b) =>
 						new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
 				)
@@ -121,7 +121,9 @@ export default function ForumContent() {
 										<button className={badgeCls}>{post.category}</button>
 										<div className="text-sm text-gray-700 dark:text-gray-400 mb-4">
 											{post.author_name} •{" "}
-											{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}{" "}
+											{formatDistanceToNow(new Date(post.created_at), {
+												addSuffix: true,
+											})}{" "}
 										</div>
 										<p className="text-xl">{post.content}</p>
 									</div>

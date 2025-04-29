@@ -52,8 +52,6 @@ export default function Item() {
 
 	// Fetching item data
 	useEffect(() => {
-		window.scrollTo(0, 0);
-
 		const fetchItem = async () => {
 			try {
 				setLoading(true);

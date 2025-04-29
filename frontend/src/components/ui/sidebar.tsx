@@ -25,7 +25,7 @@ export default function Sidebar({
 
 	return (
 		<div
-			className={`relative h-[calc(100vh-8rem)] mt-8 ml-4 bg-[#A11833] hover:bg-[#3F030F] transition-all duration-600 ease-in-out rounded-lg dark:bg-gray-950 dark:ring-1 dark:ring-white dark:hover:bg-gray-800 dark:hover:ring-[#DB572C] ${
+			className={`sticky top-20 h-[calc(100vh-8rem)] mt-4 ml-4 bg-[#A11833] hover:bg-[#3F030F] transition-all duration-600 ease-in-out rounded-lg dark:bg-gray-950 dark:ring-1 dark:ring-white dark:hover:bg-gray-800 dark:hover:ring-[#DB572C] ${
 				isCollapsed ? "w-20" : "w-64"
 			} ${className || ""}`}
 		>
