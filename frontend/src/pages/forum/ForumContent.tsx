@@ -10,7 +10,7 @@ import {
 	ForumPost,
 } from "./ForumConstants";
 import NewPostForm from "./NewForumPostForm";
-import { formatDistanceToNow, format} from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function ForumContent() {
 	const [posts, setPosts] = useState<ForumPost[]>([]);
